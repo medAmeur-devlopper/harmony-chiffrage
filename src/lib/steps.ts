@@ -1,0 +1,13 @@
+export const STEPS = [
+  { href: "accueil", label: "Accueil" },
+  { href: "parametres", label: "Paramètres" },
+  { href: "formules", label: "Formules" },
+  { href: "exigences", label: "1 · Référentiel Exigences" },
+  { href: "epics", label: "1b · Synthèse Épics" },
+  { href: "chiffrage", label: "2 · Chiffrage Projet" },
+  { href: "planning", label: "3a · Macro Planning" },
+  { href: "gantt", label: "Gantt" },
+  { href: "capacity", label: "3 · Capacity Plan" },
+  { href: "jours-feries", label: "Jours fériés" },
+  { href: "synthese", label: "4 · Synthèse & Prix" },
+];

@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f6f8;
+  --foreground: #1a2233;
+  --navy: #0b1b30;
+  --navy-medium: #16314f;
+  --gold: #ffc933;
+  --gold-dark: #d89e15;
 }
 
 @theme inline {
@@ -12,15 +16,54 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
+  background: radial-gradient(ellipse 1200px 600px at 50% -10%, #eef4fb 0%, var(--background) 55%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Excel-convention colors: cream = user input, otherwise = auto-calculated */
+.cell-input {
+  background-color: #fdf6e3;
+  border: 1px solid #e4d9b0;
+}
+.cell-input:focus {
+  outline: 2px solid #2f6f8f;
+  outline-offset: -1px;
+}
+.cell-computed {
+  background-color: #eef1f5;
+  color: #3b4759;
+}
+.cell-total {
+  background-color: #dceaf5;
+  font-weight: 600;
+}
+.cell-overload {
+  background-color: #fbdada;
+  color: #8a1f1f;
+}
+
+/* Vivid brand accents shared with the Excel export palette (navy + gold) */
+.brand-gradient {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-medium) 100%);
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: var(--navy);
+  box-shadow: 0 2px 8px rgba(216, 158, 21, 0.35);
+}
+.btn-gold:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 14px rgba(216, 158, 21, 0.45);
+}
+.card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(11, 27, 48, 0.25);
+  border-color: var(--gold);
+}
+
+

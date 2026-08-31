@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enum support; string constants are defined and validated in src/lib/constants.ts
+// UserRole: ADMIN | EDITEUR | LECTEUR
+// ProjectStatus: DRAFT | SUBMITTED | APPROVED
+// IaLevelName: SANS | ASSISTANT | COPILOTE | AGENTIC
+// Complexity: TRES_FAIBLE | FAIBLE | MOYENNE | ELEVEE | TRES_ELEVEE
+// Moscow: MUST | SHOULD | COULD | WONT
+// Coverage: COUVERTE | PARTIELLE | A_DEVELOPPER | EXCLUSIVE
+// Phase: CADRAGE | CONCEPTION | PREPARATION | CONSTRUCTION | RECETTE | DEPLOIEMENT | PILOTAGE | GARANTIE
+
+model Organization {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  users     User[]
+  projects  Project[]
+  holidays  Holiday[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String
+  passwordHash   String
+  role           String       @default("LECTEUR")
+  isActive       Boolean      @default(true)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  sessions       Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Holiday {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  date           DateTime
+  country        String
+  description    String
+}
+
+model Project {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  name           String
+  client         String
+  reference      String?
+  preparedBy     String?
+  status         String           @default("DRAFT")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  versions       ProjectVersion[]
+}
+
+model ProjectVersion {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  createdAt     DateTime @default(now())
+
+  // Params — IA
+  iaLevel String @default("SANS")
+
+  // Params — provisions & commercial conditions
+  provisionRisqueOperationnel Float @default(0.05)
+  provisionRisqueFinancier    Float @default(0.05)
+  markupProvisions            Float @default(0.3)
+  garantieBonneExecution      Float @default(0.03)
+  penaliteRetardPlafond       Float @default(0.1)
+  fourchetteHaute             Float @default(0.2)
+  fourchetteBasse             Float @default(-0.25)
+  tva                         Float @default(0)
+  echeancierLancement         Float @default(0.3)
+  echeancierRecetteFinale     Float @default(0.6)
+  echeancierRetenue           Float @default(0.1)
+
+  // Planning
+  projectStartDate DateTime?
+
+  // Chiffrage direct entry override
+  chargeDirecte Float?
+
+  // Negotiation
+  prixCibleHT Float?
+
+  // Public client share link (Gantt read-only view)
+  shareToken String? @unique
+
+  profiles         Profile[]
+  complexityLevels ComplexityLevel[]
+  iaLevels         IaLevelOption[]
+  requirements     Requirement[]
+  epics            Epic[]
+  activities       Activity[]
+  lots             Lot[]
+  resourceLines    ResourceLine[]
+  staffingEntries  StaffingEntry[]
+  milestones       Milestone[]
+}
+
+model Profile {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  name             String
+  code             String
+  cjm              Float
+  markupPct        Float
+  entity           String
+  orderNum         Int            @default(0)
+
+  activities      Activity[]
+  resourceLines   ResourceLine[]
+  staffingEntries StaffingEntry[]
+}
+
+model StaffingEntry {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  profileId        String
+  profile          Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  weekStart        DateTime
+  daysStaffed      Float          @default(0)
+
+  @@unique([profileId, weekStart])
+}
+
+model ComplexityLevel {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  name             String
+  chargeJH         Float
+  orderNum         Int            @default(0)
+}
+
+model IaLevelOption {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  name             String
+  ratio            Float
+  orderNum         Int            @default(0)
+}
+
+model Epic {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  name             String
+  lot              String?
+  orderNum         Int            @default(0)
+}
+
+model Requirement {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  refId            String
+  optional         Boolean        @default(false)
+  epicName         String
+  moduleName       String?
+  title            String
+  description      String?
+  requiresHardware Boolean        @default(false)
+  complexity       String
+  chargeAbaque     Float          @default(0)
+  chargeRetenue    Float          @default(0)
+  chargeIoT        Float          @default(0)
+  moscow           String         @default("MUST")
+  retained         Boolean        @default(true)
+  coverage         String         @default("A_DEVELOPPER")
+  orderNum         Int            @default(0)
+  createdAt        DateTime       @default(now())
+}
+
+model Activity {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  orderNum         Int
+  phase            String
+  activityName     String?
+  profileId        String?
+  profile          Profile?       @relation(fields: [profileId], references: [id])
+  abaquePct        Float          @default(0)
+  gainRefPct       Float          @default(0)
+}
+
+model Lot {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  orderNum         Int            @default(0)
+  phases           LotPhase[]
+}
+
+model LotPhase {
+  id               String    @id @default(cuid())
+  lotId            String
+  lot              Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  phase            String
+  durationWeeks    Int       @default(1)
+  startDate        DateTime?
+  endDate          DateTime?
+  manualStartDate  DateTime?
+  orderNum         Int       @default(0)
+}
+
+model Milestone {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  name             String
+  date             DateTime
+  description      String         @default("")
+  color            String         @default("#FFC933")
+  completed        Boolean        @default(false)
+  orderNum         Int            @default(0)
+  createdAt        DateTime       @default(now())
+}
+
+model ResourceLine {
+  id               String         @id @default(cuid())
+  projectVersionId String
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id], onDelete: Cascade)
+  category         String
+  resourceName     String
+  entity           String
+  unit             String
+  unitCost         Float
+  currency         String         @default("MAD")
+  exchangeRate     Float          @default(1)
+  markupPct        Float?
+  quantity         Float          @default(0)
+  profileId        String?
+  profile          Profile?       @relation(fields: [profileId], references: [id])
+  isHumanResource  Boolean        @default(false)
+  orderNum         Int            @default(0)
+}
