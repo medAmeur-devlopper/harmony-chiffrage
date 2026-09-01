@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { logActivity } from "@/lib/audit";
 import {
   DEFAULT_PROFILES,
   DEFAULT_COMPLEXITY_CHARGE,
@@ -25,7 +26,7 @@ export async function ensureDefaultOrg() {
 }
 
 export async function createProject(formData: FormData) {
-  await requireRole(["ADMIN", "EDITEUR"]);
+  const user = await requireRole(["ADMIN", "EDITEUR"]);
   const name = String(formData.get("name") || "").trim();
   const client = String(formData.get("client") || "").trim();
   const reference = String(formData.get("reference") || "").trim();
@@ -89,13 +90,34 @@ export async function createProject(formData: FormData) {
   }
 
   revalidatePath("/");
+  await logActivity({
+    organizationId: org.id,
+    projectId: project.id,
+    userId: user.id,
+    userName: user.name,
+    action: "CREATE",
+    entity: "Projet",
+    entityId: project.id,
+    details: `Création du projet « ${project.name} » pour ${project.client}`,
+  });
   redirect(`/projects/${project.id}`);
 }
 
 export async function deleteProject(formData: FormData) {
-  await requireRole(["ADMIN", "EDITEUR"]);
+  const user = await requireRole(["ADMIN", "EDITEUR"]);
   const id = String(formData.get("id") || "");
   if (!id) return;
+  const project = await prisma.project.findUnique({ where: { id } });
+  if (!project) return;
   await prisma.project.delete({ where: { id } });
+  await logActivity({
+    organizationId: project.organizationId,
+    userId: user.id,
+    userName: user.name,
+    action: "DELETE",
+    entity: "Projet",
+    entityId: id,
+    details: `Suppression du projet « ${project.name} »`,
+  });
   revalidatePath("/");
 }

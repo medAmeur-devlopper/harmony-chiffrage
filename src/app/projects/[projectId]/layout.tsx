@@ -5,7 +5,10 @@ import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, ProjectStatus, USER_ROLE_
 import { StepNavigation } from "@/components/step-navigation";
 import { NavTabs } from "@/components/nav-tabs";
 import { ReadOnlyGuard } from "@/components/read-only-guard";
+import { NotificationBell } from "@/components/notification-bell";
 import { requireAuth, logout } from "@/lib/auth";
+import { generateMilestoneNotifications } from "@/lib/notifications";
+import { markNotificationRead, markAllNotificationsRead } from "@/app/notifications/actions";
 
 export default async function ProjectLayout({
   children,
@@ -19,6 +22,14 @@ export default async function ProjectLayout({
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) notFound();
   const statusColors = PROJECT_STATUS_COLORS[project.status as ProjectStatus];
+
+  await generateMilestoneNotifications(projectId, user.id);
+  const notifications = await prisma.notification.findMany({
+    where: { userId: user.id, projectId },
+    orderBy: { createdAt: "desc" },
+    take: 15,
+  });
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -52,6 +63,19 @@ export default async function ProjectLayout({
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors.badge}`}>
               {PROJECT_STATUS_LABELS[project.status as ProjectStatus]}
             </span>
+            <NotificationBell
+              notifications={notifications.map((n) => ({
+                id: n.id,
+                type: n.type,
+                title: n.title,
+                message: n.message,
+                isRead: n.isRead,
+                createdAt: n.createdAt.toISOString(),
+              }))}
+              unreadCount={unreadCount}
+              markOneAction={markNotificationRead}
+              markAllAction={markAllNotificationsRead}
+            />
             <span className="flex items-center gap-2 border-l border-white/20 pl-3">
               <span className="text-right leading-tight">
                 <span className="block text-xs font-medium text-white">{user.name}</span>

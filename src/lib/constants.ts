@@ -39,6 +39,70 @@ export const DEFAULT_IA_RATIOS: Record<IaLevelName, number> = {
   AGENTIC: 1.2,
 };
 
+export const RISK_PROBABILITIES = ["FAIBLE", "MOYENNE", "ELEVEE"] as const;
+export type RiskProbability = (typeof RISK_PROBABILITIES)[number];
+export const RISK_PROBABILITY_LABELS: Record<RiskProbability, string> = {
+  FAIBLE: "Faible",
+  MOYENNE: "Moyenne",
+  ELEVEE: "Élevée",
+};
+
+export const RISK_IMPACTS = ["FAIBLE", "MOYEN", "ELEVE", "CRITIQUE"] as const;
+export type RiskImpact = (typeof RISK_IMPACTS)[number];
+export const RISK_IMPACT_LABELS: Record<RiskImpact, string> = {
+  FAIBLE: "Faible",
+  MOYEN: "Moyen",
+  ELEVE: "Élevé",
+  CRITIQUE: "Critique",
+};
+
+export const RISK_STATUSES = ["OUVERT", "EN_COURS", "RESOLU", "ACCEPTE"] as const;
+export type RiskStatus = (typeof RISK_STATUSES)[number];
+export const RISK_STATUS_LABELS: Record<RiskStatus, string> = {
+  OUVERT: "Ouvert",
+  EN_COURS: "En cours",
+  RESOLU: "Résolu",
+  ACCEPTE: "Accepté",
+};
+export const RISK_STATUS_COLORS: Record<RiskStatus, string> = {
+  OUVERT: "bg-red-100 text-red-700",
+  EN_COURS: "bg-amber-100 text-amber-700",
+  RESOLU: "bg-emerald-100 text-emerald-700",
+  ACCEPTE: "bg-slate-100 text-slate-600",
+};
+// Risk matrix cell score used to color the probability x impact grid (1 = low, 4 = critical).
+export const RISK_SCORE: Record<RiskProbability, Record<RiskImpact, number>> = {
+  FAIBLE: { FAIBLE: 1, MOYEN: 1, ELEVE: 2, CRITIQUE: 3 },
+  MOYENNE: { FAIBLE: 1, MOYEN: 2, ELEVE: 3, CRITIQUE: 4 },
+  ELEVEE: { FAIBLE: 2, MOYEN: 3, ELEVE: 4, CRITIQUE: 4 },
+};
+export const RISK_SCORE_COLORS: Record<number, string> = {
+  1: "bg-emerald-100 text-emerald-700",
+  2: "bg-amber-100 text-amber-700",
+  3: "bg-orange-200 text-orange-800",
+  4: "bg-red-200 text-red-800",
+};
+
+export const NOTIFICATION_TYPES = [
+  "MILESTONE_DUE",
+  "MILESTONE_OVERDUE",
+  "BUDGET_ALERT",
+  "PHASE_DELAYED",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+export const NOTIFICATION_ICONS: Record<NotificationType, string> = {
+  MILESTONE_DUE: "⏰",
+  MILESTONE_OVERDUE: "🔴",
+  BUDGET_ALERT: "💰",
+  PHASE_DELAYED: "⚠️",
+};
+
+export const AUDIT_ACTION_LABELS: Record<string, string> = {
+  CREATE: "a créé",
+  UPDATE: "a modifié",
+  DELETE: "a supprimé",
+};
+
 export const COMPLEXITIES = [
   "TRES_FAIBLE",
   "FAIBLE",

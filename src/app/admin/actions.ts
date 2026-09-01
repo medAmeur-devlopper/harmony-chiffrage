@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole, hashPassword } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "crypto";
+import { logActivity } from "@/lib/audit";
 import { UserRole } from "@/lib/constants";
 
 export async function createUser(formData: FormData) {
@@ -18,8 +19,17 @@ export async function createUser(formData: FormData) {
   if (!["ADMIN", "EDITEUR", "LECTEUR"].includes(role)) return;
 
   const passwordHash = await hashPassword(password);
-  await prisma.user.create({
+  const created = await prisma.user.create({
     data: { name, email, passwordHash, role, organizationId: admin.organizationId },
+  });
+  await logActivity({
+    organizationId: admin.organizationId,
+    userId: admin.id,
+    userName: admin.name,
+    action: "CREATE",
+    entity: "Utilisateur",
+    entityId: created.id,
+    details: `Création de l'utilisateur ${name} (${email}) — rôle ${role}`,
   });
   revalidatePath("/admin");
 }
@@ -47,7 +57,7 @@ export async function resetUserPassword(userId: string): Promise<string> {
 }
 
 export async function deleteUser(userId: string) {
-  await requireRole(["ADMIN"]);
+  const admin = await requireRole(["ADMIN"]);
   const target = await prisma.user.findUnique({ where: { id: userId } });
   if (!target) return;
   if (target.role === "ADMIN") {
@@ -55,5 +65,14 @@ export async function deleteUser(userId: string) {
     if (adminCount <= 1) return; // refuse to delete the last admin
   }
   await prisma.user.delete({ where: { id: userId } });
+  await logActivity({
+    organizationId: admin.organizationId,
+    userId: admin.id,
+    userName: admin.name,
+    action: "DELETE",
+    entity: "Utilisateur",
+    entityId: userId,
+    details: `Suppression de l'utilisateur ${target.name} (${target.email})`,
+  });
   revalidatePath("/admin");
 }

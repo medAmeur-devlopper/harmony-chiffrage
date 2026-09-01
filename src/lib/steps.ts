@@ -9,5 +9,7 @@ export const STEPS = [
   { href: "gantt", label: "Gantt" },
   { href: "capacity", label: "3 · Capacity Plan" },
   { href: "jours-feries", label: "Jours fériés" },
+  { href: "risques", label: "Risques" },
   { href: "synthese", label: "4 · Synthèse & Prix" },
+  { href: "activite", label: "Activité" },
 ];

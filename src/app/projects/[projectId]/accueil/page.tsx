@@ -85,6 +85,9 @@ export default async function AccueilPage({
   const today = new Date();
   const completedMilestones = milestones.filter((m) => m.completed).length;
   const nextMilestone = milestones.filter((m) => !m.completed && m.date >= today).sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+  const openRisksCount = await prisma.risk.count({
+    where: { projectVersionId: version.id, status: { in: ["OUVERT", "EN_COURS"] } },
+  });
 
   const field = async (fieldName: string, value: string) => {
     "use server";
@@ -101,7 +104,7 @@ export default async function AccueilPage({
         </p>
       </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
         <KpiCard label="Budget estimé (HT)" value={formatDH(provisions.prixTotalHTPrice)} accent="gold" />
         <KpiCard label="Exigences retenues" value={`${retenues} / ${totalReq}`} accent="teal" />
         <KpiCard label="Avancement global" value={`${overallProgress.toFixed(0)}%`} accent="navy" />
@@ -112,6 +115,7 @@ export default async function AccueilPage({
         />
         <KpiCard label="Prochaine échéance" value={nextMilestone ? formatDate(nextMilestone.date) : "—"} accent="gold" />
         <KpiCard label="Durée / lots" value={`${totalWeeks} sem. · ${lots.length} lots`} accent="navy" />
+        <KpiCard label="Risques actifs" value={openRisksCount.toString()} accent={openRisksCount > 0 ? "gold" : "teal"} />
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

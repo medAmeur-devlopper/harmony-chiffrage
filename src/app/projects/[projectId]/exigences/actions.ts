@@ -3,12 +3,13 @@
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { logActivity } from "@/lib/audit";
 import { Complexity, DEFAULT_COMPLEXITY_CHARGE } from "@/lib/constants";
 
 export async function addRequirement(projectId: string, versionId: string) {
-  await requireRole(["ADMIN", "EDITEUR"]);
+  const user = await requireRole(["ADMIN", "EDITEUR"]);
   const count = await prisma.requirement.count({ where: { projectVersionId: versionId } });
-  await prisma.requirement.create({
+  const req = await prisma.requirement.create({
     data: {
       projectVersionId: versionId,
       refId: `REQ-${count + 1}`,
@@ -20,12 +21,35 @@ export async function addRequirement(projectId: string, versionId: string) {
       orderNum: count,
     },
   });
+  await logActivity({
+    organizationId: user.organizationId,
+    projectId,
+    userId: user.id,
+    userName: user.name,
+    action: "CREATE",
+    entity: "Exigence",
+    entityId: req.id,
+    details: `Ajout de l'exigence ${req.refId}`,
+  });
   revalidatePath(`/projects/${projectId}`);
 }
 
 export async function deleteRequirement(id: string, projectId: string) {
-  await requireRole(["ADMIN", "EDITEUR"]);
+  const user = await requireRole(["ADMIN", "EDITEUR"]);
+  const req = await prisma.requirement.findUnique({ where: { id } });
   await prisma.requirement.delete({ where: { id } });
+  if (req) {
+    await logActivity({
+      organizationId: user.organizationId,
+      projectId,
+      userId: user.id,
+      userName: user.name,
+      action: "DELETE",
+      entity: "Exigence",
+      entityId: id,
+      details: `Suppression de l'exigence ${req.refId} « ${req.title || "sans titre"} »`,
+    });
+  }
   revalidatePath(`/projects/${projectId}`);
 }
 
