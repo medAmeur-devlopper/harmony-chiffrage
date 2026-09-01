@@ -73,7 +73,8 @@ export default async function GanttPage({
   }));
 
   const host = (await headers()).get("host");
-  const proto = process.env.NODE_ENV === "production" ? "https" : "http";
+  const forwarded = (await headers()).get("x-forwarded-proto");
+  const proto = forwarded || (process.env.HTTPS_ENABLED === "true" ? "https" : "http");
   const shareUrl = version.shareToken ? `${proto}://${host}/share/${version.shareToken}` : null;
 
   const addMilestoneAction = async (formData: FormData) => {
