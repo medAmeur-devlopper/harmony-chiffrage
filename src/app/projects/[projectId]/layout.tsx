@@ -43,6 +43,8 @@ export default async function ProjectLayout({
             )}
             <a
               href={`/api/projects/${projectId}/export`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-full border border-[#FFC933] text-[#FFC933] text-xs font-medium px-3 py-1.5 hover:bg-[#FFC933] hover:text-[#0B1B30] transition-colors"
             >
               ⬇ Exporter Excel
