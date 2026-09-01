@@ -110,3 +110,11 @@ export function totalProjectWeeks(start: Date, end: Date): number {
 export function isSameOrBefore(a: Date, b: Date): boolean {
   return isBefore(a, b) || isEqual(a, b);
 }
+
+/** Overall project progress (%) weighted by each phase's duration in weeks. */
+export function computeOverallProgress(phases: { durationWeeks: number; progress: number }[]): number {
+  const totalWeeks = phases.reduce((s, p) => s + p.durationWeeks, 0);
+  if (totalWeeks === 0) return 0;
+  const weighted = phases.reduce((s, p) => s + p.durationWeeks * p.progress, 0);
+  return weighted / totalWeeks;
+}

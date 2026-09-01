@@ -20,6 +20,15 @@ export async function updatePhaseDuration(id: string, projectId: string, value: 
   revalidatePath(`/projects/${projectId}`);
 }
 
+export async function updatePhaseProgress(id: string, projectId: string, value: string) {
+  await requireRole(["ADMIN", "EDITEUR"]);
+  const num = parseInt(value, 10);
+  if (Number.isNaN(num)) return;
+  const clamped = Math.min(100, Math.max(0, num));
+  await prisma.lotPhase.update({ where: { id }, data: { progress: clamped } });
+  revalidatePath(`/projects/${projectId}`);
+}
+
 /** Overrides the sequential lot cascade so this phase (and its lot) starts on a fixed date — enables running lots in parallel. */
 export async function updatePhaseManualStart(id: string, projectId: string, value: string) {
   await requireRole(["ADMIN", "EDITEUR"]);

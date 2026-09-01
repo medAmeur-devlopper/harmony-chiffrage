@@ -15,6 +15,7 @@ export interface GanttPhase {
   phase: string;
   startDate: Date;
   endDate: Date;
+  progress?: number;
 }
 
 export interface GanttMilestone {
@@ -267,7 +268,7 @@ export function GanttChart({ lots, phases, milestones, projectStart, projectEnd,
                               backgroundColor: color,
                               opacity: isPast ? 1 : isCurrent ? 1 : 0.35,
                             }}
-                            title={`${PHASE_LABELS[p.phase as PhaseName]} · ${fmtShort(p.startDate)} → ${fmtShort(p.endDate)}`}
+                            title={`${PHASE_LABELS[p.phase as PhaseName]} · ${fmtShort(p.startDate)} → ${fmtShort(p.endDate)} · ${Math.round(p.progress ?? 0)}% avancé`}
                           >
                             {isCurrent && elapsedWidth < width && (
                               <div
@@ -275,6 +276,11 @@ export function GanttChart({ lots, phases, milestones, projectStart, projectEnd,
                                 style={{ width: width - elapsedWidth }}
                               />
                             )}
+                            <div
+                              className="absolute left-0 bottom-0 h-1 rounded-b bg-white/90"
+                              style={{ width: `${Math.min(100, Math.max(0, p.progress ?? 0))}%` }}
+                              title={`Avancement réel · ${Math.round(p.progress ?? 0)}%`}
+                            />
                           </div>
                           {isOverdue && (
                             <div

@@ -1,9 +1,9 @@
 import { getCurrentVersion } from "@/lib/getProjectVersion";
 import { prisma } from "@/lib/prisma";
 import { EditableField } from "@/components/editable-field";
-import { updateProjectStartDate, updatePhaseDuration, updateLotDescription, updatePhaseManualStart } from "./actions";
+import { updateProjectStartDate, updatePhaseDuration, updateLotDescription, updatePhaseManualStart, updatePhaseProgress } from "./actions";
 import { PHASE_LABELS, PhaseName } from "@/lib/constants";
-import { cascadeDates, projectEndDate, totalProjectWeeks, LotPhaseInput } from "@/lib/engine/planning";
+import { cascadeDates, projectEndDate, totalProjectWeeks, computeOverallProgress, LotPhaseInput } from "@/lib/engine/planning";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 
@@ -42,6 +42,9 @@ export default async function PlanningPage({
   );
   const endDate = projectEndDate(cascaded);
   const totalWeeks = endDate ? totalProjectWeeks(projectStart, endDate) : 0;
+  const overallProgress = computeOverallProgress(
+    lots.flatMap((lot) => lot.phases.map((p) => ({ durationWeeks: p.durationWeeks, progress: p.progress })))
+  );
 
   const cascadedByPhaseId = new Map(cascaded.map((c) => [c.id, c]));
 
@@ -60,6 +63,10 @@ export default async function PlanningPage({
   const manualStartAction = async (id: string, v: string) => {
     "use server";
     await updatePhaseManualStart(id, projectId, v);
+  };
+  const progressAction = async (id: string, v: string) => {
+    "use server";
+    await updatePhaseProgress(id, projectId, v);
   };
 
   return (
@@ -94,6 +101,7 @@ export default async function PlanningPage({
           </div>
           <Stat label="Fin de projet (calculée)" value={formatDate(endDate)} />
           <Stat label="Durée totale" value={`${totalWeeks} sem.`} />
+          <Stat label="Avancement global" value={`${overallProgress.toFixed(0)}%`} />
         </div>
       </section>
 
@@ -104,6 +112,7 @@ export default async function PlanningPage({
               <th className="p-2">Lot</th>
               <th className="p-2">Phase</th>
               <th className="p-2">Durée (sem.)</th>
+              <th className="p-2">Avancement</th>
               <th className="p-2">Début manuel</th>
               <th className="p-2">Début</th>
               <th className="p-2">Fin</th>
@@ -124,6 +133,22 @@ export default async function PlanningPage({
                         defaultValue={phase.durationWeeks.toString()}
                         action={durationAction.bind(null, phase.id)}
                       />
+                    </td>
+                    <td className="p-1.5 w-32">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-linear-to-r from-[#2f6f8f] to-[#16314F]"
+                            style={{ width: `${phase.progress}%` }}
+                          />
+                        </div>
+                        <EditableField
+                          type="number"
+                          defaultValue={phase.progress.toString()}
+                          action={progressAction.bind(null, phase.id)}
+                          className="w-14 shrink-0"
+                        />
+                      </div>
                     </td>
                     <td className="p-1.5 w-36">
                       <EditableField

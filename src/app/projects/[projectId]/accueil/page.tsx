@@ -3,7 +3,11 @@ import { EditableField, EditableSelect } from "@/components/editable-field";
 import { updateProjectField } from "./actions";
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, ProjectStatus } from "@/lib/constants";
 import { totalDevCharge, totalIotCharge } from "@/lib/engine/charge";
-import { formatDate, formatJH } from "@/lib/utils";
+import { getProjectFinancials } from "@/lib/getProjectFinancials";
+import { RESOURCE_CATEGORIES } from "@/lib/constants";
+import { summarizeByCategory, computeProvisions } from "@/lib/engine/pricing";
+import { cascadeDates, projectEndDate, totalProjectWeeks, computeOverallProgress, LotPhaseInput } from "@/lib/engine/planning";
+import { formatDate, formatJH, formatDH } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 
 export default async function AccueilPage({
@@ -13,7 +17,16 @@ export default async function AccueilPage({
 }) {
   const { projectId } = await params;
   const { project, version } = await getCurrentVersion(projectId);
-  const requirements = await prisma.requirement.findMany({ where: { projectVersionId: version.id } });
+  const [requirements, lots, holidays, milestones] = await Promise.all([
+    prisma.requirement.findMany({ where: { projectVersionId: version.id } }),
+    prisma.lot.findMany({
+      where: { projectVersionId: version.id },
+      orderBy: { orderNum: "asc" },
+      include: { phases: { orderBy: { orderNum: "asc" } } },
+    }),
+    prisma.holiday.findMany({ where: { organizationId: project.organizationId } }),
+    prisma.milestone.findMany({ where: { projectVersionId: version.id }, orderBy: { date: "asc" } }),
+  ]);
 
   const totalReq = requirements.length;
   const retenues = requirements.filter((r) => r.retained).length;
@@ -39,6 +52,40 @@ export default async function AccueilPage({
     coverageCounts[r.coverage as keyof typeof coverageCounts]++;
   }
 
+  // KPI dashboard data
+  const { allLines } = await getProjectFinancials(version.id);
+  const { total } = summarizeByCategory(allLines, RESOURCE_CATEGORIES);
+  const provisions = computeProvisions({
+    sousTotalCost: total.cost,
+    sousTotalPrice: total.price,
+    provisionRisqueOperationnel: version.provisionRisqueOperationnel,
+    provisionRisqueFinancier: version.provisionRisqueFinancier,
+    tva: version.tva,
+  });
+
+  const projectStart = version.projectStartDate ?? new Date();
+  const phasesByLot: LotPhaseInput[][] = lots.map((lot) =>
+    lot.phases.map((p) => ({
+      id: p.id,
+      lotId: lot.id,
+      lotOrderNum: lot.orderNum,
+      phase: p.phase,
+      durationWeeks: p.durationWeeks,
+      phaseOrderNum: p.orderNum,
+      manualStartDate: p.manualStartDate,
+    }))
+  );
+  const cascaded = cascadeDates(projectStart, phasesByLot, holidays.map((h) => ({ date: h.date })));
+  const projectEnd = projectEndDate(cascaded);
+  const totalWeeks = projectEnd ? totalProjectWeeks(projectStart, projectEnd) : 0;
+  const overallProgress = computeOverallProgress(
+    lots.flatMap((lot) => lot.phases.map((p) => ({ durationWeeks: p.durationWeeks, progress: p.progress })))
+  );
+
+  const today = new Date();
+  const completedMilestones = milestones.filter((m) => m.completed).length;
+  const nextMilestone = milestones.filter((m) => !m.completed && m.date >= today).sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+
   const field = async (fieldName: string, value: string) => {
     "use server";
     await updateProjectField(projectId, fieldName, value);
@@ -53,6 +100,19 @@ export default async function AccueilPage({
           Outil de chiffrage Harmony — du référentiel d&apos;exigences au prix de vente.
         </p>
       </div>
+
+      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <KpiCard label="Budget estimé (HT)" value={formatDH(provisions.prixTotalHTPrice)} accent="gold" />
+        <KpiCard label="Exigences retenues" value={`${retenues} / ${totalReq}`} accent="teal" />
+        <KpiCard label="Avancement global" value={`${overallProgress.toFixed(0)}%`} accent="navy" />
+        <KpiCard
+          label="Jalons complétés"
+          value={milestones.length ? `${completedMilestones} / ${milestones.length}` : "—"}
+          accent="teal"
+        />
+        <KpiCard label="Prochaine échéance" value={nextMilestone ? formatDate(nextMilestone.date) : "—"} accent="gold" />
+        <KpiCard label="Durée / lots" value={`${totalWeeks} sem. · ${lots.length} lots`} accent="navy" />
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <section className="bg-white rounded-lg border border-slate-200 p-5">
@@ -137,6 +197,21 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="cell-total rounded-lg p-3">
       <p className="text-xs text-slate-500">{label}</p>
       <p className="text-lg font-bold text-slate-800">{value}</p>
+    </div>
+  );
+}
+
+const KPI_ACCENTS = {
+  gold: "border-[#FFC933]/40 text-[#8a6400]",
+  teal: "border-[#2f6f8f]/30 text-[#2f6f8f]",
+  navy: "border-[#16314F]/30 text-[#16314F]",
+} as const;
+
+function KpiCard({ label, value, accent }: { label: string; value: string; accent: keyof typeof KPI_ACCENTS }) {
+  return (
+    <div className={`bg-white rounded-xl border-2 ${KPI_ACCENTS[accent]} p-4 shadow-sm`}>
+      <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">{label}</p>
+      <p className="text-lg font-bold text-slate-800 mt-1">{value}</p>
     </div>
   );
 }

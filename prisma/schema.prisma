@@ -226,6 +226,7 @@ model LotPhase {
   startDate        DateTime?
   endDate          DateTime?
   manualStartDate  DateTime?
+  progress         Float     @default(0)
   orderNum         Int       @default(0)
 }
 

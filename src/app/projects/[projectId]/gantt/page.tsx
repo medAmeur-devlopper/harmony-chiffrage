@@ -56,13 +56,17 @@ export default async function GanttPage({
     name: lot.name,
     color: LOT_COLORS[i % LOT_COLORS.length],
   }));
-  const ganttPhases: GanttPhase[] = cascaded.map((c) => ({
-    id: c.id,
-    lotId: c.lotId,
-    phase: c.phase,
-    startDate: c.startDate,
-    endDate: c.endDate,
-  }));
+  const ganttPhases: GanttPhase[] = cascaded.map((c) => {
+    const progress = lots.find((l) => l.id === c.lotId)?.phases.find((p) => p.id === c.id)?.progress ?? 0;
+    return {
+      id: c.id,
+      lotId: c.lotId,
+      phase: c.phase,
+      startDate: c.startDate,
+      endDate: c.endDate,
+      progress,
+    };
+  });
   const ganttMilestones: GanttMilestone[] = milestones.map((m) => ({
     id: m.id,
     name: m.name,
