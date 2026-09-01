@@ -15,7 +15,7 @@ export async function createUser(formData: FormData) {
   const password = String(formData.get("password") || "");
   const role = String(formData.get("role") || "LECTEUR");
   if (!name || !email || !password) return;
-  if (!["EDITEUR", "LECTEUR"].includes(role)) return;
+  if (!["ADMIN", "EDITEUR", "LECTEUR"].includes(role)) return;
 
   const passwordHash = await hashPassword(password);
   await prisma.user.create({

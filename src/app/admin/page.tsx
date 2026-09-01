@@ -58,7 +58,7 @@ export default async function AdminPage() {
                 <td className="p-3 font-medium">{u.name}</td>
                 <td className="p-3 text-slate-500">{u.email}</td>
                 <td className="p-3 w-48">
-                  {u.role === "ADMIN" ? (
+                  {u.id === admin.id ? (
                     <span className="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-600">
                       {USER_ROLE_LABELS.ADMIN}
                     </span>
@@ -66,7 +66,7 @@ export default async function AdminPage() {
                     <EditableSelect
                       defaultValue={u.role}
                       action={roleAction.bind(null, u.id)}
-                      options={(["EDITEUR", "LECTEUR"] as UserRole[]).map((r) => ({
+                      options={(["ADMIN", "EDITEUR", "LECTEUR"] as UserRole[]).map((r) => ({
                         value: r,
                         label: USER_ROLE_LABELS[r],
                       }))}
@@ -89,7 +89,7 @@ export default async function AdminPage() {
                 <td className="p-3">
                   <div className="flex items-center gap-3">
                     <ResetPasswordButton action={resetAction.bind(null, u.id)} />
-                    {u.role !== "ADMIN" && (
+                    {u.id !== admin.id && (
                       <form action={deleteAction.bind(null, u.id)}>
                         <ConfirmSubmitButton
                           confirmMessage={`Supprimer l'utilisateur ${u.name} ?`}
@@ -125,6 +125,7 @@ export default async function AdminPage() {
           <div>
             <label className="text-xs font-medium text-slate-500">Rôle</label>
             <select name="role" defaultValue="LECTEUR" className="cell-input w-full rounded px-3 py-2 text-sm mt-1">
+              <option value="ADMIN">{USER_ROLE_LABELS.ADMIN}</option>
               <option value="EDITEUR">{USER_ROLE_LABELS.EDITEUR}</option>
               <option value="LECTEUR">{USER_ROLE_LABELS.LECTEUR}</option>
             </select>
