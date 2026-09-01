@@ -4,12 +4,12 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { STEPS } from "@/lib/steps";
 
-export function NavTabs({ projectId }: { projectId: string }) {
+export function NavTabs({ projectId, userRole }: { projectId: string; userRole: string }) {
   const pathname = usePathname();
 
   return (
     <nav className="mx-auto max-w-7xl px-6 flex gap-1 overflow-x-auto pb-3">
-      {STEPS.map((tab) => {
+      {STEPS.filter((tab) => tab.href !== "formules" || userRole === "ADMIN").map((tab) => {
         const active = pathname.endsWith(`/${tab.href}`);
         return (
           <Link

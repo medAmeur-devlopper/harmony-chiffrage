@@ -2,6 +2,7 @@ import { getCurrentVersion } from "@/lib/getProjectVersion";
 import { prisma } from "@/lib/prisma";
 import { EditableField } from "@/components/editable-field";
 import { updateComplexityCharge, updateProvision, updateIaRatio } from "../parametres/actions";
+import { requireRole } from "@/lib/auth";
 import {
   COMPLEXITY_LABELS,
   Complexity,
@@ -48,6 +49,7 @@ export default async function FormulesPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
+  await requireRole(["ADMIN"]);
   const { version } = await getCurrentVersion(projectId);
 
   const [complexityLevels, iaLevels] = await Promise.all([

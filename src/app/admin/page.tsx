@@ -6,6 +6,7 @@ import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { createUser, updateUserRole, toggleUserActive, resetUserPassword, deleteUser } from "./actions";
 import { USER_ROLE_LABELS, UserRole } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
+import Link from "next/link";
 
 export default async function AdminPage() {
   const admin = await requireRole(["ADMIN"]);
@@ -34,7 +35,8 @@ export default async function AdminPage() {
   return (
     <div className="mx-auto max-w-6xl w-full px-6 py-10 space-y-6">
       <header className="brand-gradient rounded-2xl px-8 py-10 text-white shadow-lg shadow-slate-900/10">
-        <p className="text-sm font-semibold tracking-wide text-[#FFC933]">HARMONY · OUTIL DE CHIFFRAGE</p>
+        <Link href="/" className="text-xs font-semibold tracking-wide text-[#FFC933] hover:underline">← Mes projets</Link>
+        <p className="text-sm font-semibold tracking-wide text-[#FFC933] mt-2">HARMONY · OUTIL DE CHIFFRAGE</p>
         <h1 className="text-2xl font-bold mt-2">🔐 Administration — Gestion des utilisateurs</h1>
       </header>
 

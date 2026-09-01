@@ -69,7 +69,7 @@ export default async function ProjectLayout({
             </span>
           </span>
         </div>
-        <NavTabs projectId={projectId} />
+        <NavTabs projectId={projectId} userRole={user.role} />
       </header>
       <main className="flex-1 mx-auto max-w-7xl w-full px-6 py-8">
         <ReadOnlyGuard role={user.role}>{children}</ReadOnlyGuard>
