@@ -32,10 +32,12 @@ export async function GET(
     return NextResponse.json({ error: "Fichier manquant sur le serveur." }, { status: 404 });
   }
 
-  // Inline preview is only ever allowed for images (thumbnails) — every other file is forced as attachment.
+  // Inline preview is restricted to mime types with no script-execution risk (no HTML/SVG) — everything else is forced as attachment.
+  const INLINE_SAFE_TYPES = ["application/pdf", "text/plain", "text/csv", "text/markdown", "application/json"];
   const wantsInline = req.nextUrl.searchParams.get("inline") === "1";
   const isImage = document.mimeType.startsWith("image/");
-  const inline = wantsInline && isImage;
+  const isInlineSafe = isImage || INLINE_SAFE_TYPES.includes(document.mimeType);
+  const inline = wantsInline && isInlineSafe;
 
   const stat = fs.statSync(document.storedPath);
   const nodeStream = fs.createReadStream(document.storedPath);

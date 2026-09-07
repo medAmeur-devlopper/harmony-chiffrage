@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { DocumentPreviewModal } from "./document-preview-modal";
 
 export interface DocumentItem {
   id: string;
@@ -42,6 +43,7 @@ export function DocumentsPanel({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
   const [, startTransition] = useTransition();
 
   const pct = Math.min(100, (usedBytes / quotaBytes) * 100);
@@ -154,9 +156,14 @@ export function DocumentsPanel({
                     ) : (
                       <span className="text-lg">📄</span>
                     )}
-                    <span className="truncate max-w-[220px]" title={d.fileName}>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc(d)}
+                      className="truncate max-w-[220px] text-left hover:underline"
+                      title={d.fileName}
+                    >
                       {d.fileName}
-                    </span>
+                    </button>
                   </div>
                 </td>
                 <td className="p-3 text-slate-500">{d.mimeType}</td>
@@ -165,6 +172,13 @@ export function DocumentsPanel({
                 <td className="p-3 text-slate-500">{new Date(d.createdAt).toLocaleDateString("fr-FR")}</td>
                 <td className="p-3">
                   <div className="flex items-center gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc(d)}
+                      className="text-xs text-[#2f6f8f] hover:underline"
+                    >
+                      Aperçu
+                    </button>
                     <a
                       href={`/api/projects/${projectId}/documents/${d.id}/download`}
                       className="text-xs text-[#2f6f8f] hover:underline"
@@ -200,6 +214,8 @@ export function DocumentsPanel({
           </tbody>
         </table>
       </div>
+
+      <DocumentPreviewModal doc={previewDoc} projectId={projectId} onClose={() => setPreviewDoc(null)} />
     </div>
   );
 }
