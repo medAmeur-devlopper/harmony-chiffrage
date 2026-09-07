@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, ProjectStatus, USER_ROLE_LABELS, UserRole } from "@/lib/constants";
+import { ProjectStatus, USER_ROLE_LABELS, UserRole } from "@/lib/constants";
+import { StatusBadge } from "@/components/status-badge";
 import { StepNavigation } from "@/components/step-navigation";
 import { NavSidebar } from "@/components/nav-sidebar";
 import { CommandPalette } from "@/components/command-palette";
@@ -23,7 +24,6 @@ export default async function ProjectLayout({
   const user = await requireAuth();
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) notFound();
-  const statusColors = PROJECT_STATUS_COLORS[project.status as ProjectStatus];
 
   await generateMilestoneNotifications(projectId, user.id);
   const notifications = await prisma.notification.findMany({
@@ -64,9 +64,7 @@ export default async function ProjectLayout({
             >
               ⬇ Exporter Excel
             </a>
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors.badge}`}>
-              {PROJECT_STATUS_LABELS[project.status as ProjectStatus]}
-            </span>
+            <StatusBadge status={project.status as ProjectStatus} />
             <NotificationBell
               notifications={notifications.map((n) => ({
                 id: n.id,

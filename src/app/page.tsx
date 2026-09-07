@@ -2,9 +2,10 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { createProject, deleteProject } from "@/app/actions";
 import { requireAuth, logout } from "@/lib/auth";
-import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, ProjectStatus, USER_ROLE_LABELS, UserRole } from "@/lib/constants";
+import { PROJECT_STATUS_COLORS, ProjectStatus, USER_ROLE_LABELS, UserRole } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/status-badge";
 
 export const dynamic = "force-dynamic";
 
@@ -73,9 +74,7 @@ export default async function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${colors.badge}`}>
-                    {PROJECT_STATUS_LABELS[p.status as ProjectStatus]}
-                  </span>
+                  <StatusBadge status={p.status as ProjectStatus} />
                   {canEdit && (
                     <form action={deleteProject}>
                       <input type="hidden" name="id" value={p.id} />
