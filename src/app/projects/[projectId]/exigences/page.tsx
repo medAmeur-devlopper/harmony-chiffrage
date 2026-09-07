@@ -80,9 +80,9 @@ export default async function ExigencesPage({
         <table className="w-full text-sm min-w-[1400px]">
           <thead>
             <tr className="text-left text-xs text-muted border-b border-slate-200">
-              <th className="p-2">ID</th>
-              <th className="p-2">Epic</th>
-              <th className="p-2">Module</th>
+              <th className="p-2 min-w-24">ID</th>
+              <th className="p-2 min-w-36">Epic</th>
+              <th className="p-2 min-w-36">Module</th>
               <th className="p-2 min-w-[200px]">Titre</th>
               <th className="p-2 min-w-[260px]">Exigence fonctionnelle</th>
               <th className="p-2">Matériel ?</th>
@@ -99,13 +99,13 @@ export default async function ExigencesPage({
           <tbody>
             {requirements.map((r) => (
               <tr key={r.id} className="border-b border-slate-100 align-top">
-                <td className="p-1.5 w-28">
+                <td className="p-1.5 min-w-24">
                   <EditableField defaultValue={r.refId} action={field.bind(null, r.id, "refId")} />
                 </td>
-                <td className="p-1.5 w-32">
+                <td className="p-1.5 min-w-36">
                   <EditableField defaultValue={r.epicName} action={field.bind(null, r.id, "epicName")} />
                 </td>
-                <td className="p-1.5 w-32">
+                <td className="p-1.5 min-w-36">
                   <EditableField defaultValue={r.moduleName ?? ""} action={field.bind(null, r.id, "moduleName")} />
                 </td>
                 <td className="p-1.5">
@@ -114,22 +114,22 @@ export default async function ExigencesPage({
                 <td className="p-1.5">
                   <EditableField defaultValue={r.description ?? ""} action={field.bind(null, r.id, "description")} />
                 </td>
-                <td className="p-1.5 w-24">
+                <td className="p-1.5 min-w-28">
                   <EditableSelect
                     defaultValue={r.requiresHardware ? "true" : "false"}
                     action={field.bind(null, r.id, "requiresHardware")}
                     options={[{ value: "false", label: "Non" }, { value: "true", label: "Oui" }]}
                   />
                 </td>
-                <td className="p-1.5 w-32">
+                <td className="p-1.5 min-w-36">
                   <EditableSelect
                     defaultValue={r.complexity}
                     action={field.bind(null, r.id, "complexity")}
                     options={COMPLEXITIES.map((c) => ({ value: c, label: COMPLEXITY_LABELS[c as Complexity] }))}
                   />
                 </td>
-                <td className="p-1.5 w-20 cell-computed rounded text-center">{r.chargeAbaque}</td>
-                <td className="p-1.5 w-24">
+                <td className="p-1.5 min-w-24 cell-computed rounded text-center">{r.chargeAbaque}</td>
+                <td className="p-1.5 min-w-28">
                   <EditableField
                     type="number"
                     step="0.5"
@@ -137,7 +137,7 @@ export default async function ExigencesPage({
                     action={field.bind(null, r.id, "chargeRetenue")}
                   />
                 </td>
-                <td className="p-1.5 w-24">
+                <td className="p-1.5 min-w-28">
                   <EditableField
                     type="number"
                     step="0.5"
@@ -145,21 +145,21 @@ export default async function ExigencesPage({
                     action={field.bind(null, r.id, "chargeIoT")}
                   />
                 </td>
-                <td className="p-1.5 w-24">
+                <td className="p-1.5 min-w-28">
                   <EditableSelect
                     defaultValue={r.moscow}
                     action={field.bind(null, r.id, "moscow")}
                     options={MOSCOW_VALUES.map((m) => ({ value: m, label: MOSCOW_LABELS[m as Moscow] }))}
                   />
                 </td>
-                <td className="p-1.5 w-24">
+                <td className="p-1.5 min-w-28">
                   <EditableSelect
                     defaultValue={r.retained ? "true" : "false"}
                     action={field.bind(null, r.id, "retained")}
                     options={[{ value: "true", label: "Oui" }, { value: "false", label: "Non" }]}
                   />
                 </td>
-                <td className="p-1.5 w-40">
+                <td className="p-1.5 min-w-44">
                   <EditableSelect
                     defaultValue={r.coverage}
                     action={field.bind(null, r.id, "coverage")}

@@ -139,9 +139,9 @@ export default async function ChiffragePage({
           <thead>
             <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">#</th>
-              <th className="p-2">Phase</th>
+              <th className="p-2 min-w-36">Phase</th>
               <th className="p-2 min-w-55">Activité</th>
-              <th className="p-2">Profil</th>
+              <th className="p-2 min-w-44">Profil</th>
               <th className="p-2">% abaque</th>
               <th className="p-2">Charge sans IA</th>
               <th className="p-2">% gain réf.</th>
@@ -154,7 +154,7 @@ export default async function ChiffragePage({
             {abaqueResults.map((a, i) => (
               <tr key={a.id} className="border-b border-slate-100">
                 <td className="p-1.5 text-muted">{i + 1}</td>
-                <td className="p-1.5 w-32">
+                <td className="p-1.5 min-w-36">
                   <EditableSelect
                     defaultValue={a.phase}
                     action={activityAction.bind(null, a.id, "phase")}
@@ -167,14 +167,14 @@ export default async function ChiffragePage({
                     action={activityAction.bind(null, a.id, "activityName")}
                   />
                 </td>
-                <td className="p-1.5 w-40">
+                <td className="p-1.5 min-w-44">
                   <EditableSelect
                     defaultValue={a.profileId ?? ""}
                     action={activityAction.bind(null, a.id, "profileId")}
                     options={[{ value: "", label: "—" }, ...profiles.map((p) => ({ value: p.id, label: p.name }))]}
                   />
                 </td>
-                <td className="p-1.5 w-20">
+                <td className="p-1.5 min-w-24">
                   <EditableField
                     type="number"
                     step="0.001"
@@ -182,8 +182,8 @@ export default async function ChiffragePage({
                     action={activityAction.bind(null, a.id, "abaquePct")}
                   />
                 </td>
-                <td className="p-1.5 w-24 cell-computed rounded text-center">{formatJH(a.chargeSansIA)}</td>
-                <td className="p-1.5 w-20">
+                <td className="p-1.5 min-w-28 cell-computed rounded text-center">{formatJH(a.chargeSansIA)}</td>
+                <td className="p-1.5 min-w-24">
                   <EditableField
                     type="number"
                     step="0.01"
@@ -191,8 +191,8 @@ export default async function ChiffragePage({
                     action={activityAction.bind(null, a.id, "gainRefPct")}
                   />
                 </td>
-                <td className="p-1.5 w-20 cell-computed rounded text-center">{formatPct(a.gainIAPct)}</td>
-                <td className="p-1.5 w-24 cell-computed rounded text-center">{formatJH(a.chargeRetenue)}</td>
+                <td className="p-1.5 min-w-24 cell-computed rounded text-center">{formatPct(a.gainIAPct)}</td>
+                <td className="p-1.5 min-w-28 cell-computed rounded text-center">{formatJH(a.chargeRetenue)}</td>
                 <td className="p-1.5">
                   <form action={delActivityAction.bind(null, a.id)}>
                     <button type="submit" className="text-xs text-red-500 hover:text-red-700">
@@ -311,37 +311,37 @@ export default async function ChiffragePage({
               const l = otherLines[idx];
               return (
                 <tr key={line.id} className="border-b border-slate-100">
-                  <td className="p-1.5 w-40">
+                  <td className="p-1.5 min-w-44">
                     <EditableSelect
                       defaultValue={line.category}
                       action={lineAction.bind(null, line.id, "category")}
                       options={RESOURCE_CATEGORIES.map((c) => ({ value: c, label: c }))}
                     />
                   </td>
-                  <td className="p-1.5 w-40">
+                  <td className="p-1.5 min-w-44">
                     <EditableField
                       defaultValue={line.resourceName}
                       action={lineAction.bind(null, line.id, "resourceName")}
                     />
                   </td>
-                  <td className="p-1.5 w-28">
+                  <td className="p-1.5 min-w-32">
                     <EditableSelect
                       defaultValue={line.entity}
                       action={lineAction.bind(null, line.id, "entity")}
                       options={ENTITIES.map((e) => ({ value: e, label: e }))}
                     />
                   </td>
-                  <td className="p-1.5 w-16">
+                  <td className="p-1.5 min-w-20">
                     <EditableField defaultValue={line.unit} action={lineAction.bind(null, line.id, "unit")} />
                   </td>
-                  <td className="p-1.5 w-20">
+                  <td className="p-1.5 min-w-24">
                     <EditableSelect
                       defaultValue={line.currency}
                       action={lineAction.bind(null, line.id, "currency")}
                       options={CURRENCIES.map((c) => ({ value: c, label: c }))}
                     />
                   </td>
-                  <td className="p-1.5 w-20">
+                  <td className="p-1.5 min-w-24">
                     <EditableField
                       type="number"
                       step="0.01"
@@ -349,7 +349,7 @@ export default async function ChiffragePage({
                       action={lineAction.bind(null, line.id, "exchangeRate")}
                     />
                   </td>
-                  <td className="p-1.5 w-24">
+                  <td className="p-1.5 min-w-28">
                     <EditableField
                       type="number"
                       defaultValue={line.unitCost.toString()}
@@ -357,7 +357,7 @@ export default async function ChiffragePage({
                     />
                   </td>
                   <td className="p-2 cell-computed rounded text-center">{formatDH(l.unitCostMAD)}</td>
-                  <td className="p-1.5 w-20">
+                  <td className="p-1.5 min-w-24">
                     <EditableField
                       type="number"
                       step="0.01"
@@ -365,7 +365,7 @@ export default async function ChiffragePage({
                       action={lineAction.bind(null, line.id, "markupPct")}
                     />
                   </td>
-                  <td className="p-1.5 w-20">
+                  <td className="p-1.5 min-w-24">
                     <EditableField
                       type="number"
                       defaultValue={line.quantity.toString()}

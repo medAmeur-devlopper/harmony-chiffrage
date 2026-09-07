@@ -168,21 +168,21 @@ export default async function PlanningPage({
                         action={reorderPhaseAction}
                       />
                     </td>
-                    <td className="p-2 w-40">
+                    <td className="p-2 min-w-44">
                       <EditableField
                         defaultValue={phase.customLabel ?? PHASE_LABELS[phase.phase as PhaseName]}
                         action={renamePhaseAction.bind(null, phase.id)}
                         className="text-xs"
                       />
                     </td>
-                    <td className="p-1.5 w-20">
+                    <td className="p-1.5 min-w-24">
                       <EditableField
                         type="number"
                         defaultValue={phase.durationWeeks.toString()}
                         action={durationAction.bind(null, phase.id)}
                       />
                     </td>
-                    <td className="p-1.5 w-32">
+                    <td className="p-1.5 min-w-36">
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
                           <div
@@ -198,7 +198,7 @@ export default async function PlanningPage({
                         />
                       </div>
                     </td>
-                    <td className="p-1.5 w-36">
+                    <td className="p-1.5 min-w-40">
                       <EditableField
                         type="text"
                         defaultValue={phase.manualStartDate ? phase.manualStartDate.toISOString().slice(0, 10) : ""}
@@ -215,7 +215,7 @@ export default async function PlanningPage({
                         action={deletePhaseAction}
                       />
                     </td>
-                    <td className="p-1.5 w-48">
+                    <td className="p-1.5 min-w-52">
                       {idx === 0 ? (
                         <EditableField
                           defaultValue={lot.description ?? ""}

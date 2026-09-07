@@ -1,6 +1,44 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi/satoshi-light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi/satoshi-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi/satoshi-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi/satoshi-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi/satoshi-black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  --app-font-sans: "Satoshi", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
   --background: #f5f6f8;
   --foreground: #1a2233;
   --navy: #0b1b30;
@@ -66,14 +104,14 @@
   --color-lavender: var(--shell-lavender);
   --color-sky: var(--shell-sky);
   --color-cream-warm: var(--shell-cream-warm);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--app-font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-instrument-serif), Georgia, serif;
+  --font-display: var(--app-font-sans);
 }
 
 body {
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--app-font-sans);
 }
 
 /* Subtle noise texture over the editorial shell — decorative only, never blocks input. */
