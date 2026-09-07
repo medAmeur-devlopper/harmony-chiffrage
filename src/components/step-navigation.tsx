@@ -13,11 +13,11 @@ export function StepNavigation({ projectId }: { projectId: string }) {
   const next = STEPS[currentIndex + 1];
 
   return (
-    <div className="mt-8 flex items-center justify-between border-t border-slate-200 pt-4">
+    <div className="mt-8 flex items-center justify-between border-t border-subtle pt-4">
       {prev ? (
         <Link
           href={`/projects/${projectId}/${prev.href}`}
-          className="text-sm font-medium text-slate-500 hover:text-[#16314F] transition-colors"
+          className="text-sm font-medium text-muted hover:text-accent transition-colors"
         >
           ← {prev.label}
         </Link>
@@ -27,7 +27,7 @@ export function StepNavigation({ projectId }: { projectId: string }) {
       {next ? (
         <Link
           href={`/projects/${projectId}/${next.href}`}
-          className="btn-gold rounded-full text-sm font-semibold px-5 py-2 transition-all"
+          className="rounded-full bg-accent text-white text-sm font-semibold px-5 py-2 transition-all hover:scale-[1.02]"
         >
           {next.label} →
         </Link>

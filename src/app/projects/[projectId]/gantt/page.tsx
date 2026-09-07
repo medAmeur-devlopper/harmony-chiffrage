@@ -1,8 +1,10 @@
 import { getCurrentVersion } from "@/lib/getProjectVersion";
 import { prisma } from "@/lib/prisma";
-import { EditableField, EditableSelect } from "@/components/editable-field";
-import { GanttChart, GanttLot, GanttPhase, GanttMilestone } from "@/components/gantt-chart";
+import { EditableField, EditableSelect, EditableColorSwatch } from "@/components/editable-field";
+import { GanttLot, GanttPhase } from "@/components/gantt-chart";
+import { GanttBoard, BoardMilestone } from "@/components/gantt-board";
 import { ShareLinkPanel } from "@/components/share-link-panel";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   addMilestone,
   updateMilestone,
@@ -10,9 +12,15 @@ import {
   toggleMilestoneCompleted,
   generateShareLink,
   revokeShareLink,
+  moveMilestone,
+  quickAddMilestone,
+  updateMilestoneStatus,
+  updateMilestoneProgress,
+  assignMilestoneOwner,
+  linkMilestoneToLotOrPhase,
 } from "./actions";
 import { cascadeDates, projectEndDate, LotPhaseInput } from "@/lib/engine/planning";
-import { LOT_COLORS, MILESTONE_COLORS } from "@/lib/constants";
+import { LOT_COLORS, MILESTONE_COLORS, PHASE_LABELS, PhaseName } from "@/lib/constants";
 import { headers } from "next/headers";
 
 export default async function GanttPage({
@@ -22,14 +30,15 @@ export default async function GanttPage({
 }) {
   const { projectId } = await params;
   const { project, version } = await getCurrentVersion(projectId);
-  const [lots, holidays, milestones] = await Promise.all([
+  const [lots, holidays, milestones, orgUsers] = await Promise.all([
     prisma.lot.findMany({
       where: { projectVersionId: version.id },
       orderBy: { orderNum: "asc" },
       include: { phases: { orderBy: { orderNum: "asc" } } },
     }),
     prisma.holiday.findMany({ where: { organizationId: project.organizationId } }),
-    prisma.milestone.findMany({ where: { projectVersionId: version.id }, orderBy: { date: "asc" } }),
+    prisma.milestone.findMany({ where: { projectVersionId: version.id }, orderBy: { date: "asc" }, include: { owner: true } }),
+    prisma.user.findMany({ where: { organizationId: project.organizationId, isActive: true }, orderBy: { name: "asc" } }),
   ]);
 
   const projectStart = version.projectStartDate ?? new Date();
@@ -57,24 +66,41 @@ export default async function GanttPage({
     color: LOT_COLORS[i % LOT_COLORS.length],
   }));
   const ganttPhases: GanttPhase[] = cascaded.map((c) => {
-    const progress = lots.find((l) => l.id === c.lotId)?.phases.find((p) => p.id === c.id)?.progress ?? 0;
+    const dbPhase = lots.find((l) => l.id === c.lotId)?.phases.find((p) => p.id === c.id);
     return {
       id: c.id,
       lotId: c.lotId,
       phase: c.phase,
+      customLabel: dbPhase?.customLabel ?? null,
       startDate: c.startDate,
       endDate: c.endDate,
-      progress,
+      progress: dbPhase?.progress ?? 0,
     };
   });
-  const ganttMilestones: GanttMilestone[] = milestones.map((m) => ({
+  const boardMilestones: BoardMilestone[] = milestones.map((m) => ({
     id: m.id,
     name: m.name,
     date: m.date,
     description: m.description,
     color: m.color,
     completed: m.completed,
+    status: m.status,
+    progress: m.progress,
+    ownerUserId: m.ownerUserId,
+    ownerName: m.owner?.name ?? null,
+    lotId: m.lotId,
+    lotPhaseId: m.lotPhaseId,
   }));
+
+  const lotOptions = lots.map((lot) => ({
+    id: lot.id,
+    name: lot.name,
+    phases: lot.phases.map((p) => ({
+      id: p.id,
+      label: p.customLabel || PHASE_LABELS[p.phase as PhaseName] || p.phase,
+    })),
+  }));
+  const userOptions = orgUsers.map((u) => ({ id: u.id, name: u.name }));
 
   const host = (await headers()).get("host");
   const forwarded = (await headers()).get("x-forwarded-proto");
@@ -105,28 +131,71 @@ export default async function GanttPage({
     "use server";
     await revokeShareLink(version.id, projectId);
   };
+  const moveMilestoneAction = async (id: string, newDateISO: string) => {
+    "use server";
+    await moveMilestone(id, projectId, newDateISO);
+  };
+  const quickAddAction = async (dateISO: string) => {
+    "use server";
+    await quickAddMilestone(projectId, version.id, dateISO);
+  };
+  const saveMilestoneAction = async (
+    id: string,
+    data: { name: string; date: string; description: string; color: string }
+  ) => {
+    "use server";
+    await updateMilestone(id, projectId, "name", data.name);
+    await updateMilestone(id, projectId, "date", data.date);
+    await updateMilestone(id, projectId, "description", data.description);
+    await updateMilestone(id, projectId, "color", data.color);
+  };
+  const statusAction = async (id: string, status: string) => {
+    "use server";
+    await updateMilestoneStatus(id, projectId, status);
+  };
+  const progressAction = async (id: string, progress: number) => {
+    "use server";
+    await updateMilestoneProgress(id, projectId, String(progress));
+  };
+  const ownerAction = async (id: string, ownerUserId: string) => {
+    "use server";
+    await assignMilestoneOwner(id, projectId, ownerUserId);
+  };
+  const linkAction = async (id: string, lotId: string, lotPhaseId: string) => {
+    "use server";
+    await linkMilestoneToLotOrPhase(id, projectId, lotId, lotPhaseId);
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">Gantt interactif &amp; jalons</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Vue agile du planning — phases par lot, jalons, et lien de partage client en lecture seule.
-        </p>
-      </div>
-
-      <GanttChart
-        lots={ganttLots}
-        phases={ganttPhases}
-        milestones={ganttMilestones}
-        projectStart={projectStart}
-        projectEnd={projectEnd}
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Gantt & jalons"
+        highlight="jalons"
+        subtitle="Vue agile du planning — phases par lot, jalons, et lien de partage client en lecture seule."
       />
 
-      <section className="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-1">Partage client</h3>
-        <p className="text-xs text-slate-500 mb-3">
+      <GanttBoard
+        lots={ganttLots}
+        phases={ganttPhases}
+        milestones={boardMilestones}
+        projectStart={projectStart}
+        projectEnd={projectEnd}
+        lotOptions={lotOptions}
+        userOptions={userOptions}
+        onMilestoneSave={saveMilestoneAction}
+        onMilestoneStatusChange={statusAction}
+        onMilestoneProgressChange={progressAction}
+        onMilestoneOwnerChange={ownerAction}
+        onMilestoneLinkChange={linkAction}
+        onMilestoneDelete={deleteAction}
+        onMilestoneMove={moveMilestoneAction}
+        onTimelineCreate={quickAddAction}
+      />
+
+      <section className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-1">Partage client</h3>
+        <p className="text-xs text-muted mb-3">
           Ce lien public affiche le Gantt et les jalons en lecture seule — aucune donnée financière (coûts, prix,
           marges) n&apos;est exposée.
         </p>
@@ -154,11 +223,11 @@ export default async function GanttPage({
         )}
       </section>
 
-      <section className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
-        <h3 className="font-semibold text-slate-700 p-4 pb-0">Jalons du projet</h3>
+      <section className="rounded-2xl bg-surface overflow-x-auto">
+        <h3 className="font-semibold text-primary p-4 pb-0">Jalons du projet</h3>
         <table className="w-full text-sm mt-3">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">Atteint</th>
               <th className="p-2">Nom</th>
               <th className="p-2">Date</th>
@@ -190,11 +259,11 @@ export default async function GanttPage({
                 <td className="p-1.5 min-w-48">
                   <EditableField defaultValue={m.description} action={milestoneAction.bind(null, m.id, "description")} />
                 </td>
-                <td className="p-1.5 w-28">
-                  <EditableSelect
+                <td className="p-1.5 w-32">
+                  <EditableColorSwatch
                     defaultValue={m.color}
                     action={milestoneAction.bind(null, m.id, "color")}
-                    options={MILESTONE_COLORS.map((c) => ({ value: c, label: c }))}
+                    colors={MILESTONE_COLORS}
                   />
                 </td>
                 <td className="p-1.5">
@@ -208,7 +277,7 @@ export default async function GanttPage({
             ))}
             {milestones.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-4 text-center text-slate-400">
+                <td colSpan={6} className="p-4 text-center text-muted">
                   Aucun jalon défini.
                 </td>
               </tr>
@@ -217,15 +286,15 @@ export default async function GanttPage({
         </table>
         <form action={addMilestoneAction} className="p-4 flex flex-wrap items-end gap-3 border-t border-slate-100">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Nom</label>
+            <label className="block text-xs text-muted mb-1">Nom</label>
             <input type="text" name="name" required placeholder="Livraison Lot 1" className="cell-input rounded px-2 py-1.5 text-sm" />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Date</label>
+            <label className="block text-xs text-muted mb-1">Date</label>
             <input type="date" name="date" required className="cell-input rounded px-2 py-1.5 text-sm" />
           </div>
           <div className="flex-1 min-w-40">
-            <label className="block text-xs text-slate-500 mb-1">Description</label>
+            <label className="block text-xs text-muted mb-1">Description</label>
             <input type="text" name="description" placeholder="Optionnel" className="cell-input rounded px-2 py-1.5 text-sm w-full" />
           </div>
           <button

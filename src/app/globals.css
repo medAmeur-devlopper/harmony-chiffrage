@@ -7,19 +7,84 @@
   --navy-medium: #16314f;
   --gold: #ffc933;
   --gold-dark: #d89e15;
+
+  /* harmony-modern editorial shell tokens — light (Clarvos-inspired rich palette) */
+  --shell-app: #f5f1e8;
+  --shell-surface: #ffffff;
+  --shell-subtle: #e5e1d6;
+  --shell-primary: #0a0a0a;
+  --shell-muted: #6b6b6b;
+  --shell-accent: #ffd84d;
+  --shell-accent-ink: #0a0a0a;
+  --shell-ink: #0a0a0a;
+  --shell-brand: #16314f;
+
+  /* Clarvos floating-card pastels — light */
+  --shell-mint: #c7e9d0;
+  --shell-rose: #f5c6d0;
+  --shell-lavender: #d9cff2;
+  --shell-sky: #b9dceb;
+  --shell-cream-warm: #f5ead1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* harmony-modern editorial shell tokens — dark (app/ink inverted, accent unchanged) */
+    --shell-app: #0a0a0a;
+    --shell-surface: #16161c;
+    --shell-subtle: #26262e;
+    --shell-primary: #f5f1e8;
+    --shell-muted: #9a9a9a;
+    --shell-accent: #ffd84d;
+    --shell-accent-ink: #0a0a0a;
+    --shell-ink: #f5f1e8;
+    --shell-brand: #4a6d90;
+
+    /* Clarvos floating-card pastels — dark (desaturated to stay legible on ink) */
+    --shell-mint: #7baa88;
+    --shell-rose: #b98793;
+    --shell-lavender: #9c8fc2;
+    --shell-sky: #7ea3b5;
+    --shell-cream-warm: #b8a97e;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-app: var(--shell-app);
+  --color-surface: var(--shell-surface);
+  --color-subtle: var(--shell-subtle);
+  --color-primary: var(--shell-primary);
+  --color-muted: var(--shell-muted);
+  --color-accent: var(--shell-accent);
+  --color-accent-ink: var(--shell-accent-ink);
+  --color-ink: var(--shell-ink);
+  --color-brand: var(--shell-brand);
+  --color-mint: var(--shell-mint);
+  --color-rose: var(--shell-rose);
+  --color-lavender: var(--shell-lavender);
+  --color-sky: var(--shell-sky);
+  --color-cream-warm: var(--shell-cream-warm);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-instrument-serif), Georgia, serif;
 }
 
 body {
-  background: radial-gradient(ellipse 1200px 600px at 50% -10%, #eef4fb 0%, var(--background) 55%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Subtle noise texture over the editorial shell — decorative only, never blocks input. */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* Excel-convention colors: cream = user input, otherwise = auto-calculated */
@@ -48,15 +113,6 @@ body {
 .brand-gradient {
   background: linear-gradient(135deg, var(--navy) 0%, var(--navy-medium) 100%);
 }
-.btn-gold {
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
-  color: var(--navy);
-  box-shadow: 0 2px 8px rgba(216, 158, 21, 0.35);
-}
-.btn-gold:hover {
-  filter: brightness(1.05);
-  box-shadow: 0 4px 14px rgba(216, 158, 21, 0.45);
-}
 .card-hover {
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
@@ -66,4 +122,53 @@ body {
   border-color: var(--gold);
 }
 
+/* Editorial motion sprint: magnetic hover for Stat/KPI/Lot cards */
+.hover-card-magnetic {
+  transition: transform 250ms ease-out, box-shadow 250ms ease-out;
+}
+.hover-card-magnetic:hover {
+  transform: scale(1.01);
+  box-shadow: 0 12px 24px -12px rgba(11, 27, 48, 0.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hover-card-magnetic {
+    transition: none;
+  }
+  .hover-card-magnetic:hover {
+    transform: none;
+  }
+}
+
+/* Editorial motion sprint: skeleton loading state */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--shell-subtle);
+  border-radius: 0.75rem;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+@media (prefers-color-scheme: dark) {
+  .skeleton::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  }
+}
+@keyframes skeleton-pulse {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
 

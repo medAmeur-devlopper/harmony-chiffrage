@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { addHoliday, deleteHoliday } from "./actions";
 import { formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function JoursFeriesPage({
   params,
@@ -25,18 +27,17 @@ export default async function JoursFeriesPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">Jours fériés</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Ces dates sont exclues (en plus des week-ends) du calcul du Macro Planning et du Capacity Plan.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Jours fériés"
+        highlight="fériés"
+        subtitle="Ces dates sont exclues (en plus des week-ends) du calcul du Macro Planning et du Capacity Plan."
+      />
 
-      <section className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
+      <section className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm mt-3">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">Date</th>
               <th className="p-2">Pays</th>
               <th className="p-2">Description</th>
@@ -60,7 +61,7 @@ export default async function JoursFeriesPage({
             ))}
             {holidays.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-4 text-center text-slate-400">
+                <td colSpan={4} className="p-4 text-center text-muted">
                   Aucun jour férié enregistré.
                 </td>
               </tr>
@@ -69,11 +70,11 @@ export default async function JoursFeriesPage({
         </table>
         <form action={addHolidayAction} className="p-4 flex flex-wrap items-end gap-3 border-t border-slate-100">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Date</label>
+            <label className="block text-xs text-muted mb-1">Date</label>
             <input type="date" name="date" required className="cell-input rounded px-2 py-1.5 text-sm" />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Pays</label>
+            <label className="block text-xs text-muted mb-1">Pays</label>
             <input
               type="text"
               name="country"
@@ -82,7 +83,7 @@ export default async function JoursFeriesPage({
             />
           </div>
           <div className="flex-1 min-w-40">
-            <label className="block text-xs text-slate-500 mb-1">Description</label>
+            <label className="block text-xs text-muted mb-1">Description</label>
             <input
               type="text"
               name="description"
@@ -90,12 +91,7 @@ export default async function JoursFeriesPage({
               className="cell-input rounded px-2 py-1.5 text-sm w-full"
             />
           </div>
-          <button
-            type="submit"
-            className="btn-gold rounded-full text-sm font-semibold px-4 py-2 transition-all"
-          >
-            + Ajouter
-          </button>
+          <Button type="submit">+ Ajouter</Button>
         </form>
       </section>
     </div>

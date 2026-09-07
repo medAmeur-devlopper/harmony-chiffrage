@@ -15,6 +15,7 @@ import {
   CURRENCIES,
 } from "@/lib/constants";
 import { formatPct } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/page-header";
 
 /** Collapsible section wrapper shared by every formula block below. */
 function FormulaSection({
@@ -27,10 +28,10 @@ function FormulaSection({
   defaultOpen?: boolean;
 }) {
   return (
-    <details open={defaultOpen} className="bg-white rounded-lg border border-slate-200 group">
-      <summary className="cursor-pointer list-none p-5 font-semibold text-slate-700 flex items-center justify-between">
+    <details open={defaultOpen} className="rounded-2xl bg-surface group">
+      <summary className="cursor-pointer list-none p-5 font-semibold text-primary flex items-center justify-between">
         {title}
-        <span className="text-slate-400 text-sm group-open:rotate-90 transition-transform">▶</span>
+        <span className="text-muted text-sm group-open:rotate-90 transition-transform">▶</span>
       </summary>
       <div className="px-5 pb-5 space-y-4">{children}</div>
     </details>
@@ -39,7 +40,7 @@ function FormulaSection({
 
 function Formula({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-slate-50 rounded px-3 py-2 font-mono text-sm text-slate-700 overflow-x-auto">{children}</div>
+    <div className="bg-app rounded px-3 py-2 font-mono text-sm text-primary overflow-x-auto">{children}</div>
   );
 }
 
@@ -75,13 +76,12 @@ export default async function FormulesPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">Formules &amp; paramètres</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Toutes les formules de calcul du chiffrage, avec les paramètres modifiables qui les alimentent.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Formules & paramètres"
+        highlight="Formules"
+        subtitle="Toutes les formules de calcul du chiffrage, avec les paramètres modifiables qui les alimentent."
+      />
 
       <FormulaSection title="1. Charge des exigences" defaultOpen>
         <Formula>Charge Dev+TU = Σ requirement.chargeRetenue (si retained = true)</Formula>
@@ -89,7 +89,7 @@ export default async function FormulesPage({
         <Formula>Driver Charge = chargeDirecte si saisie manuellement, sinon Charge Dev+TU</Formula>
 
         <div>
-          <p className="text-sm font-medium text-slate-600 mb-2">Échelle de complexité → Charge (JH)</p>
+          <p className="text-sm font-medium text-muted mb-2">Échelle de complexité → Charge (JH)</p>
           <table className="w-full text-sm max-w-md">
             <tbody>
               {complexityLevels.map((c) => (
@@ -110,7 +110,7 @@ export default async function FormulesPage({
         </div>
 
         <div>
-          <p className="text-sm font-medium text-slate-600 mb-2">Ratios IA (multiplicateur du gain référence)</p>
+          <p className="text-sm font-medium text-muted mb-2">Ratios IA (multiplicateur du gain référence)</p>
           <table className="w-full text-sm max-w-md">
             <tbody>
               {iaLevels.map((l) => (
@@ -136,7 +136,7 @@ export default async function FormulesPage({
         <Formula>Gain IA % = gainRefPct × ratioIA</Formula>
         <Formula>Gain IA (JH) = chargeSansIA × gainIA%</Formula>
         <Formula>Charge retenue = chargeSansIA − gainIA</Formula>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-muted">
           Les 42 activités et leur % d&apos;abaque sont éditables sur la page 2 · Chiffrage Projet. Leur somme
           représente ≈ 2.16× la charge Dev+TU driver.
         </p>
@@ -150,12 +150,12 @@ export default async function FormulesPage({
         <Formula>Profils humains → quantité = Σ chargeRetenue des activités affectées au profil</Formula>
 
         <div>
-          <p className="text-sm font-medium text-slate-600 mb-2">
+          <p className="text-sm font-medium text-muted mb-2">
             Taux de change par défaut (informatif — modifiable par ligne de ressource sur la page Chiffrage)
           </p>
           <table className="w-full text-sm max-w-md">
             <thead>
-              <tr className="text-left text-xs text-slate-400">
+              <tr className="text-left text-xs text-muted">
                 <th className="pb-2">Devise</th>
                 <th className="pb-2">1 unité = X MAD</th>
               </tr>
@@ -194,7 +194,7 @@ export default async function FormulesPage({
             ] as { field: Parameters<typeof updateProvision>[2]; label: string; value: number }[]
           ).map((row) => (
             <div key={row.field} className="flex items-center justify-between gap-4">
-              <label className="text-sm text-slate-600">{row.label}</label>
+              <label className="text-sm text-muted">{row.label}</label>
               <div className="w-28 flex items-center gap-2">
                 <EditableField
                   type="number"
@@ -202,7 +202,7 @@ export default async function FormulesPage({
                   defaultValue={row.value.toString()}
                   action={provision.bind(null, row.field)}
                 />
-                <span className="text-xs text-slate-400 w-10">{formatPct(row.value)}</span>
+                <span className="text-xs text-muted w-10">{formatPct(row.value)}</span>
               </div>
             </div>
           ))}
@@ -223,7 +223,7 @@ export default async function FormulesPage({
             ] as { field: Parameters<typeof updateProvision>[2]; label: string; value: number }[]
           ).map((row) => (
             <div key={row.field} className="flex items-center justify-between gap-4">
-              <label className="text-sm text-slate-600">{row.label}</label>
+              <label className="text-sm text-muted">{row.label}</label>
               <div className="w-28 flex items-center gap-2">
                 <EditableField
                   type="number"
@@ -231,7 +231,7 @@ export default async function FormulesPage({
                   defaultValue={row.value.toString()}
                   action={provision.bind(null, row.field)}
                 />
-                <span className="text-xs text-slate-400 w-10">{formatPct(row.value)}</span>
+                <span className="text-xs text-muted w-10">{formatPct(row.value)}</span>
               </div>
             </div>
           ))}
@@ -247,7 +247,7 @@ export default async function FormulesPage({
         <Formula>Un lot démarre le jour ouvré suivant la fin du lot précédent (sauf date manuelle)</Formula>
 
         <div>
-          <p className="text-sm font-medium text-slate-600 mb-2">
+          <p className="text-sm font-medium text-muted mb-2">
             Durées par défaut des phases (semaines) — informatif, éditable par lot sur la page Macro Planning
           </p>
           <table className="w-full text-sm max-w-md">

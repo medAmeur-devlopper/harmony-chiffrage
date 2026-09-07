@@ -38,6 +38,9 @@ yarn-error.log*
 *.db
 *.db-journal
 
+# uploaded project documents
+/uploads/
+
 # vercel
 .vercel
 

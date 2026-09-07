@@ -4,6 +4,7 @@ import { createProject, deleteProject } from "@/app/actions";
 import { requireAuth, logout } from "@/lib/auth";
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, ProjectStatus, USER_ROLE_LABELS, UserRole } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -112,12 +113,9 @@ export default async function DashboardPage() {
                   <label className="text-xs font-medium text-slate-500">Préparé par</label>
                   <input name="preparedBy" className="cell-input w-full rounded px-3 py-2 text-sm mt-1" />
                 </div>
-                <button
-                  type="submit"
-                  className="btn-gold w-full mt-2 rounded-lg text-sm font-semibold py-2.5 transition-all"
-                >
+                <Button type="submit" className="w-full mt-2">
                   Créer le projet
-                </button>
+                </Button>
               </form>
             </div>
           </section>

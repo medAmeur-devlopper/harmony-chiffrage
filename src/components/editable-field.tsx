@@ -57,3 +57,54 @@ export function EditableSelect({ defaultValue, action, options, className }: Edi
     </select>
   );
 }
+
+interface ColorSwatchPickerProps {
+  value: string;
+  onChange: (value: string) => void;
+  colors: string[];
+  className?: string;
+}
+
+/** A row of clickable color circles — shows the picked color instead of a hex-text dropdown. */
+export function ColorSwatchPicker({ value, onChange, colors, className }: ColorSwatchPickerProps) {
+  return (
+    <div className={cn("flex flex-wrap gap-1.5", className)}>
+      {colors.map((c) => (
+        <button
+          key={c}
+          type="button"
+          title={c}
+          onClick={() => onChange(c)}
+          className={cn(
+            "w-6 h-6 rounded-full border-2 transition-transform",
+            value === c ? "border-slate-700 scale-110" : "border-white ring-1 ring-slate-200"
+          )}
+          style={{ backgroundColor: c }}
+        />
+      ))}
+    </div>
+  );
+}
+
+interface EditableColorSwatchProps {
+  defaultValue: string;
+  action: (value: string) => Promise<void>;
+  colors: string[];
+  className?: string;
+}
+
+export function EditableColorSwatch({ defaultValue, action, colors, className }: EditableColorSwatchProps) {
+  const [value, setValue] = useState(defaultValue);
+  const [isPending, startTransition] = useTransition();
+  return (
+    <ColorSwatchPicker
+      value={value}
+      colors={colors}
+      className={cn(isPending && "opacity-60", className)}
+      onChange={(c) => {
+        setValue(c);
+        startTransition(() => action(c));
+      }}
+    />
+  );
+}

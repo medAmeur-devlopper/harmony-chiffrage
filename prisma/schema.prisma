@@ -44,6 +44,8 @@ model User {
   sessions       Session[]
   auditLogs      AuditLog[]
   notifications  Notification[]
+  milestones     Milestone[]
+  uploads        Document[]
 }
 
 model Session {
@@ -78,6 +80,7 @@ model Project {
   versions       ProjectVersion[]
   auditLogs      AuditLog[]
   notifications  Notification[]
+  documents      Document[]
 }
 
 model ProjectVersion {
@@ -226,6 +229,7 @@ model Lot {
   description      String?
   orderNum         Int            @default(0)
   phases           LotPhase[]
+  milestones       Milestone[]
 }
 
 model LotPhase {
@@ -233,12 +237,14 @@ model LotPhase {
   lotId            String
   lot              Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
   phase            String
+  customLabel      String?
   durationWeeks    Int       @default(1)
   startDate        DateTime?
   endDate          DateTime?
   manualStartDate  DateTime?
   progress         Float     @default(0)
   orderNum         Int       @default(0)
+  milestones       Milestone[]
 }
 
 model Milestone {
@@ -252,6 +258,15 @@ model Milestone {
   completed        Boolean        @default(false)
   orderNum         Int            @default(0)
   createdAt        DateTime       @default(now())
+
+  status           String         @default("A_VENIR")
+  progress         Int            @default(0)
+  ownerUserId      String?
+  owner            User?          @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  lotId            String?
+  lot              Lot?           @relation(fields: [lotId], references: [id], onDelete: SetNull)
+  lotPhaseId       String?
+  lotPhase         LotPhase?      @relation(fields: [lotPhaseId], references: [id], onDelete: SetNull)
 }
 
 model ResourceLine {
@@ -316,4 +331,17 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploaderId String?
+  uploader   User?    @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+  fileName   String
+  storedPath String
+  mimeType   String
+  sizeBytes  Int
+  createdAt  DateTime @default(now())
 }

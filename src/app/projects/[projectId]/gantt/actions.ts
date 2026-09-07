@@ -127,3 +127,78 @@ export async function revokeShareLink(versionId: string, projectId: string) {
   });
   revalidateAll(projectId);
 }
+
+export async function updateMilestoneStatus(id: string, projectId: string, status: string) {
+  const user = await requireRole(["ADMIN", "EDITEUR"]);
+  const { MILESTONE_STATUSES } = await import("@/lib/constants");
+  if (!MILESTONE_STATUSES.includes(status as (typeof MILESTONE_STATUSES)[number])) return;
+  const milestone = await prisma.milestone.update({
+    where: { id },
+    data: { status, completed: status === "ATTEINT" },
+  });
+  await logActivity({
+    organizationId: user.organizationId,
+    projectId,
+    userId: user.id,
+    userName: user.name,
+    action: "UPDATE",
+    entity: "Jalon",
+    entityId: id,
+    details: `Jalon « ${milestone.name} » — statut changé en ${status}`,
+  });
+  revalidateAll(projectId);
+}
+
+export async function updateMilestoneProgress(id: string, projectId: string, value: string) {
+  await requireRole(["ADMIN", "EDITEUR"]);
+  const num = parseInt(value, 10);
+  if (Number.isNaN(num)) return;
+  const clamped = Math.min(100, Math.max(0, num));
+  await prisma.milestone.update({ where: { id }, data: { progress: clamped } });
+  revalidateAll(projectId);
+}
+
+export async function assignMilestoneOwner(id: string, projectId: string, ownerUserId: string) {
+  await requireRole(["ADMIN", "EDITEUR"]);
+  await prisma.milestone.update({ where: { id }, data: { ownerUserId: ownerUserId || null } });
+  revalidateAll(projectId);
+}
+
+export async function linkMilestoneToLotOrPhase(id: string, projectId: string, lotId: string, lotPhaseId: string) {
+  await requireRole(["ADMIN", "EDITEUR"]);
+  await prisma.milestone.update({
+    where: { id },
+    data: { lotId: lotId || null, lotPhaseId: lotPhaseId || null },
+  });
+  revalidateAll(projectId);
+}
+
+export async function moveMilestone(id: string, projectId: string, newDateISO: string) {
+  await requireRole(["ADMIN", "EDITEUR"]);
+  const date = new Date(newDateISO);
+  if (Number.isNaN(date.getTime())) return;
+  await prisma.milestone.update({ where: { id }, data: { date } });
+  revalidateAll(projectId);
+}
+
+export async function quickAddMilestone(projectId: string, versionId: string, dateISO: string) {
+  const user = await requireRole(["ADMIN", "EDITEUR"]);
+  const date = new Date(dateISO);
+  if (Number.isNaN(date.getTime())) return;
+  const count = await prisma.milestone.count({ where: { projectVersionId: versionId } });
+  const milestone = await prisma.milestone.create({
+    data: { projectVersionId: versionId, name: "Nouveau jalon", date, orderNum: count },
+  });
+  await logActivity({
+    organizationId: user.organizationId,
+    projectId,
+    userId: user.id,
+    userName: user.name,
+    action: "CREATE",
+    entity: "Jalon",
+    entityId: milestone.id,
+    details: `Ajout rapide du jalon prévu le ${date.toLocaleDateString("fr-FR")}`,
+  });
+  revalidateAll(projectId);
+  return milestone.id;
+}

@@ -206,6 +206,15 @@ export const LOT_COLORS = [
 
 export const MILESTONE_COLORS = ["#FFC933", "#22C55E", "#EF4444", "#7C3AED", "#2f6f8f", "#DB2777"];
 
+export const MILESTONE_STATUSES = ["A_VENIR", "EN_COURS", "ATTEINT", "EN_RETARD"] as const;
+export type MilestoneStatus = (typeof MILESTONE_STATUSES)[number];
+export const MILESTONE_STATUS_LABELS: Record<MilestoneStatus, string> = {
+  A_VENIR: "À venir",
+  EN_COURS: "En cours",
+  ATTEINT: "Atteint",
+  EN_RETARD: "En retard",
+};
+
 export const RESOURCE_CATEGORIES = [
   "Moyens Humains",
   "Achat Équipements & Matériels",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
 
 export function LoginForm({
   action,
@@ -42,13 +43,9 @@ export function LoginForm({
         />
       </div>
       {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="btn-gold w-full mt-2 rounded-lg text-sm font-semibold py-2.5 transition-all disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isPending} className="w-full mt-2">
         {isPending ? "Connexion…" : "Se connecter"}
-      </button>
+      </Button>
     </form>
   );
 }

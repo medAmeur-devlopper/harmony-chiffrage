@@ -7,6 +7,7 @@ import { createUser, updateUserRole, toggleUserActive, resetUserPassword, delete
 import { USER_ROLE_LABELS, UserRole } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminPage() {
   const admin = await requireRole(["ADMIN"]);
@@ -130,9 +131,9 @@ export default async function AdminPage() {
               <option value="LECTEUR">{USER_ROLE_LABELS.LECTEUR}</option>
             </select>
           </div>
-          <button type="submit" className="btn-gold w-full mt-2 rounded-lg text-sm font-semibold py-2.5 transition-all">
+          <Button type="submit" className="w-full mt-2">
             Créer l&apos;utilisateur
-          </button>
+          </Button>
         </form>
       </section>
     </div>

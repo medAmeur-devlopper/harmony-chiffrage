@@ -4,6 +4,7 @@ import { GanttChart, GanttLot, GanttPhase, GanttMilestone } from "@/components/g
 import { cascadeDates, projectEndDate, totalProjectWeeks, LotPhaseInput } from "@/lib/engine/planning";
 import { LOT_COLORS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
+import { Stat } from "@/components/ui/stat";
 
 export default async function SharedGanttPage({
   params,
@@ -133,15 +134,6 @@ export default async function SharedGanttPage({
           Vue de partage générée par Harmony Technology — les données financières ne sont pas incluses.
         </p>
       </main>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-800 mt-1">{value}</p>
     </div>
   );
 }

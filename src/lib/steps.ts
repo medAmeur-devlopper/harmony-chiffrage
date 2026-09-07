@@ -12,4 +12,5 @@ export const STEPS = [
   { href: "risques", label: "Risques" },
   { href: "synthese", label: "4 · Synthèse & Prix" },
   { href: "activite", label: "Activité" },
+  { href: "documents", label: "Documents" },
 ];

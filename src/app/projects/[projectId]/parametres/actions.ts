@@ -27,12 +27,15 @@ export async function updateProfile(
     await prisma.profile.update({ where: { id }, data: { [field]: num } });
   }
   revalidatePath(`/projects/${projectId}`);
+  // cjm/entity feed the "Ressource chiffrage" column, markupPct feeds pricing shown on /capacity's other-lines footer.
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 export async function updateIaLevel(versionId: string, projectId: string, value: string) {
   await requireRole(["ADMIN", "EDITEUR"]);
   await prisma.projectVersion.update({ where: { id: versionId }, data: { iaLevel: value } });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 export async function updateIaRatio(id: string, projectId: string, value: string) {
@@ -41,6 +44,7 @@ export async function updateIaRatio(id: string, projectId: string, value: string
   if (Number.isNaN(num)) return;
   await prisma.iaLevelOption.update({ where: { id }, data: { ratio: num } });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 export async function addProfile(projectId: string, versionId: string) {
@@ -58,6 +62,7 @@ export async function addProfile(projectId: string, versionId: string) {
     },
   });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 /**
@@ -70,6 +75,7 @@ export async function deleteProfile(id: string, projectId: string) {
   if (usageCount > 0) return;
   await prisma.profile.delete({ where: { id } });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 const PROVISION_FIELDS = [

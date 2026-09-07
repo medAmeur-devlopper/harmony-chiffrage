@@ -13,6 +13,10 @@ import {
   computeNegotiation,
 } from "@/lib/engine/pricing";
 import { formatDH, formatPct } from "@/lib/utils";
+import { Stat } from "@/components/ui/stat";
+import { FadeInSection } from "@/components/motion/fade-in-section";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
 
 export default async function SynthesePage({
   params,
@@ -62,20 +66,19 @@ export default async function SynthesePage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">4 · Synthèse &amp; prix</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Coûts, prix et marge par catégorie et entité ; provisions, garanties, échéancier, fourchettes.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Synthèse & prix"
+        highlight="prix"
+        subtitle="Coûts, prix et marge par catégorie et entité ; provisions, garanties, échéancier, fourchettes."
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
-          <h3 className="font-semibold text-slate-700 p-4 pb-0">A. Prix par catégorie de ressources</h3>
+        <FadeInSection className="rounded-2xl bg-surface overflow-x-auto">
+          <h3 className="font-semibold text-primary p-4 pb-0">A. Prix par catégorie de ressources</h3>
           <table className="w-full text-sm mt-3">
             <thead>
-              <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+              <tr className="text-left text-xs text-muted border-b border-slate-200">
                 <th className="p-2">Catégorie</th>
                 <th className="p-2">Coût</th>
                 <th className="p-2">Prix</th>
@@ -99,13 +102,13 @@ export default async function SynthesePage({
               </tr>
             </tbody>
           </table>
-        </section>
+        </FadeInSection>
 
-        <section className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
-          <h3 className="font-semibold text-slate-700 p-4 pb-0">C. Split par entité</h3>
+        <FadeInSection className="rounded-2xl bg-surface overflow-x-auto">
+          <h3 className="font-semibold text-primary p-4 pb-0">C. Split par entité</h3>
           <table className="w-full text-sm mt-3">
             <thead>
-              <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+              <tr className="text-left text-xs text-muted border-b border-slate-200">
                 <th className="p-2">Entité</th>
                 <th className="p-2">Coût</th>
                 <th className="p-2">Prix</th>
@@ -123,11 +126,11 @@ export default async function SynthesePage({
               ))}
             </tbody>
           </table>
-        </section>
+        </FadeInSection>
       </div>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">B. Provisions &amp; prix de vente</h3>
+      <FadeInSection className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">B. Provisions &amp; prix de vente</h3>
         <table className="w-full text-sm">
           <tbody>
             <Row label="Sous-total (coûts / prix)" cost={provisions.sousTotalCost} price={provisions.sousTotalPrice} />
@@ -154,90 +157,94 @@ export default async function SynthesePage({
             </tr>
           </tbody>
         </table>
-      </section>
+      </FadeInSection>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-white rounded-lg border border-slate-200 p-5">
-          <h3 className="font-semibold text-slate-700 mb-4">Fourchette d&apos;offre</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Prix estimé (référence)</span>
-              <span className="font-semibold">{formatDH(ranges.prixEstime)}</span>
+        <FadeInSection>
+          <Card tone="lavender">
+            <h3 className="font-semibold text-ink mb-4">Fourchette d&apos;offre</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-ink/60">Prix estimé (référence)</span>
+                <span className="font-semibold text-ink">{formatDH(ranges.prixEstime)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink/60">Fourchette haute ({formatPct(version.fourchetteHaute)})</span>
+                <span className="text-ink">{formatDH(ranges.fourchetteHauteMontant)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink/60">Fourchette basse ({formatPct(version.fourchetteBasse)})</span>
+                <span className="text-ink">{formatDH(ranges.fourchetteBasseMontant)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink/60">Garantie bonne exécution ({formatPct(version.garantieBonneExecution)})</span>
+                <span className="text-ink">{formatDH(ranges.garantieMontant)}</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Fourchette haute ({formatPct(version.fourchetteHaute)})</span>
-              <span>{formatDH(ranges.fourchetteHauteMontant)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Fourchette basse ({formatPct(version.fourchetteBasse)})</span>
-              <span>{formatDH(ranges.fourchetteBasseMontant)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Garantie bonne exécution ({formatPct(version.garantieBonneExecution)})</span>
-              <span>{formatDH(ranges.garantieMontant)}</span>
-            </div>
-          </div>
-        </section>
+          </Card>
+        </FadeInSection>
 
-        <section className="bg-white rounded-lg border border-slate-200 p-5">
-          <h3 className="font-semibold text-slate-700 mb-4">Échéancier de paiement (HT)</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-500">Lancement</span>
-              <div className="flex items-center gap-2">
-                <EditableField
-                  type="number"
-                  step="0.01"
-                  defaultValue={version.echeancierLancement.toString()}
-                  action={echeancierAction.bind(null, "echeancierLancement")}
-                  className="w-20"
-                />
-                <span className="font-semibold w-24 text-right">{formatDH(schedule.lancement)}</span>
+        <FadeInSection>
+          <Card tone="sky">
+            <h3 className="font-semibold text-ink mb-4">Échéancier de paiement (HT)</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-ink/60">Lancement</span>
+                <div className="flex items-center gap-2">
+                  <EditableField
+                    type="number"
+                    step="0.01"
+                    defaultValue={version.echeancierLancement.toString()}
+                    action={echeancierAction.bind(null, "echeancierLancement")}
+                    className="w-20"
+                  />
+                  <span className="font-semibold w-24 text-right text-ink">{formatDH(schedule.lancement)}</span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-500">Recette finale</span>
-              <div className="flex items-center gap-2">
-                <EditableField
-                  type="number"
-                  step="0.01"
-                  defaultValue={version.echeancierRecetteFinale.toString()}
-                  action={echeancierAction.bind(null, "echeancierRecetteFinale")}
-                  className="w-20"
-                />
-                <span className="font-semibold w-24 text-right">{formatDH(schedule.recetteFinale)}</span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-ink/60">Recette finale</span>
+                <div className="flex items-center gap-2">
+                  <EditableField
+                    type="number"
+                    step="0.01"
+                    defaultValue={version.echeancierRecetteFinale.toString()}
+                    action={echeancierAction.bind(null, "echeancierRecetteFinale")}
+                    className="w-20"
+                  />
+                  <span className="font-semibold w-24 text-right text-ink">{formatDH(schedule.recetteFinale)}</span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-500">Retenue / garantie</span>
-              <div className="flex items-center gap-2">
-                <EditableField
-                  type="number"
-                  step="0.01"
-                  defaultValue={version.echeancierRetenue.toString()}
-                  action={echeancierAction.bind(null, "echeancierRetenue")}
-                  className="w-20"
-                />
-                <span className="font-semibold w-24 text-right">{formatDH(schedule.retenue)}</span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-ink/60">Retenue / garantie</span>
+                <div className="flex items-center gap-2">
+                  <EditableField
+                    type="number"
+                    step="0.01"
+                    defaultValue={version.echeancierRetenue.toString()}
+                    action={echeancierAction.bind(null, "echeancierRetenue")}
+                    className="w-20"
+                  />
+                  <span className="font-semibold w-24 text-right text-ink">{formatDH(schedule.retenue)}</span>
+                </div>
               </div>
+              <p
+                className={`text-xs font-medium pt-1 ${
+                  Math.round(echeancierSum * 100) === 100 ? "text-green-700" : "text-red-600"
+                }`}
+              >
+                Somme des tranches : {formatPct(echeancierSum)}{" "}
+                {Math.round(echeancierSum * 100) === 100 ? "✓" : "— doit faire 100%"}
+              </p>
             </div>
-            <p
-              className={`text-xs font-medium pt-1 ${
-                Math.round(echeancierSum * 100) === 100 ? "text-green-600" : "text-red-500"
-              }`}
-            >
-              Somme des tranches : {formatPct(echeancierSum)}{" "}
-              {Math.round(echeancierSum * 100) === 100 ? "✓" : "— doit faire 100%"}
-            </p>
-          </div>
-        </section>
+          </Card>
+        </FadeInSection>
       </div>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">D. Négociation — prix cible</h3>
+      <FadeInSection className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">D. Négociation — prix cible</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div>
-            <label className="text-xs font-medium text-slate-500">Prix cible HT (négocié)</label>
+            <label className="text-xs font-medium text-muted">Prix cible HT (négocié)</label>
             <EditableField
               type="number"
               defaultValue={version.prixCibleHT?.toString() ?? ""}
@@ -253,11 +260,11 @@ export default async function SynthesePage({
           )}
         </div>
         {negotiation && (
-          <p className="text-sm text-slate-500 mt-3">
+          <p className="text-sm text-muted mt-3">
             Écart vs prix calculé : <span className="font-semibold">{formatDH(negotiation.ecartVsPrixCalcule)}</span>
           </p>
         )}
-      </section>
+      </FadeInSection>
     </div>
   );
 }
@@ -265,18 +272,9 @@ export default async function SynthesePage({
 function Row({ label, cost, price }: { label: string; cost: number; price: number }) {
   return (
     <tr className="border-b border-slate-100">
-      <td className="p-2 text-slate-600">{label}</td>
+      <td className="p-2 text-muted">{label}</td>
       <td className="p-2">{formatDH(cost)}</td>
       <td className="p-2">{formatDH(price)}</td>
     </tr>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="cell-total rounded-lg p-3">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-800">{value}</p>
-    </div>
   );
 }

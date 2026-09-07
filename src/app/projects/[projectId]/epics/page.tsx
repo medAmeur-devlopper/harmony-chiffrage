@@ -4,6 +4,9 @@ import { EditableField, EditableSelect } from "@/components/editable-field";
 import { addEpic, updateEpic, deleteEpic } from "./actions";
 import { DEFAULT_LOTS } from "@/lib/constants";
 import { formatJH } from "@/lib/utils";
+import { Stat } from "@/components/ui/stat";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function EpicsPage({
   params,
@@ -59,18 +62,17 @@ export default async function EpicsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">1b · Synthèse par épic</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Saisir les noms d&apos;épics (identiques à la colonne Epic du référentiel) et le lot de rattachement.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Synthèse par épic"
+        highlight="épic"
+        subtitle="Saisir les noms d'épics (identiques à la colonne Epic du référentiel) et le lot de rattachement."
+      />
 
-      <section className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
+      <section className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">#</th>
               <th className="p-2">Épic</th>
               <th className="p-2">Lot</th>
@@ -90,7 +92,7 @@ export default async function EpicsPage({
           <tbody>
             {rows.map((row, i) => (
               <tr key={row.epic.id} className="border-b border-slate-100">
-                <td className="p-2 text-slate-400">{i + 1}</td>
+                <td className="p-2 text-muted">{i + 1}</td>
                 <td className="p-1.5 w-40">
                   <EditableField defaultValue={row.epic.name} action={upd.bind(null, row.epic.id, "name")} />
                 </td>
@@ -143,16 +145,11 @@ export default async function EpicsPage({
       </section>
 
       <form action={addAction}>
-        <button
-          type="submit"
-          className="btn-gold rounded-full text-sm font-semibold px-4 py-2 transition-all"
-        >
-          + Ajouter un épic
-        </button>
+        <Button type="submit">+ Ajouter un épic</Button>
       </form>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">B. Lecture</h3>
+      <section className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">B. Lecture</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Stat label="Charge à développer (🔴)" value={formatJH(totalRouge)} />
           <Stat label="Charge sur existant produit (🟢 + 🟣)" value={formatJH(totalVertViolet)} />
@@ -160,15 +157,6 @@ export default async function EpicsPage({
           <Stat label="Charge IoT (hors driver Dev+TU)" value={formatJH(totalIoT)} />
         </div>
       </section>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="cell-total rounded-lg p-3">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-800">{value}</p>
     </div>
   );
 }

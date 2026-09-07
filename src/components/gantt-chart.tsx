@@ -13,6 +13,7 @@ export interface GanttPhase {
   id: string;
   lotId: string;
   phase: string;
+  customLabel?: string | null;
   startDate: Date;
   endDate: Date;
   progress?: number;
@@ -25,6 +26,11 @@ export interface GanttMilestone {
   description: string;
   color: string;
   completed: boolean;
+  status?: string;
+  progress?: number;
+  ownerName?: string | null;
+  lotId?: string | null;
+  lotPhaseId?: string | null;
 }
 
 interface GanttChartProps {
@@ -34,6 +40,10 @@ interface GanttChartProps {
   projectStart: Date;
   projectEnd: Date | null;
   readOnly?: boolean;
+  selectedMilestoneId?: string | null;
+  onMilestoneClick?: (id: string) => void;
+  onMilestoneMove?: (id: string, newDateISO: string) => void;
+  onTimelineClick?: (dateISO: string) => void;
 }
 
 const ZOOM_LEVELS = {
@@ -60,8 +70,20 @@ function fmtShort(d: Date): string {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
 }
 
-export function GanttChart({ lots, phases, milestones, projectStart, projectEnd, readOnly }: GanttChartProps) {
+export function GanttChart({
+  lots,
+  phases,
+  milestones,
+  projectStart,
+  projectEnd,
+  readOnly,
+  selectedMilestoneId,
+  onMilestoneClick,
+  onMilestoneMove,
+  onTimelineClick,
+}: GanttChartProps) {
   const [zoom, setZoom] = useState<ZoomLevel>("semaine");
+  const [drag, setDrag] = useState<{ id: string; startX: number; deltaDays: number } | null>(null);
   const pxPerDay = ZOOM_LEVELS[zoom];
   const today = startOfDay(new Date());
 
@@ -187,20 +209,82 @@ export function GanttChart({ lots, phases, milestones, projectStart, projectEnd,
             >
               Jalons
             </div>
-            <div className="relative" style={{ width: totalWidth, height: 32 }}>
+            <div
+              className="relative"
+              style={{ width: totalWidth, height: 32, cursor: !readOnly && onTimelineClick ? "copy" : undefined }}
+              onDoubleClick={(e) => {
+                if (readOnly || !onTimelineClick) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const dayIdx = Math.round(x / pxPerDay);
+                const date = addDays(timelineStart, dayIdx);
+                onTimelineClick(date.toISOString().slice(0, 10));
+              }}
+              title={!readOnly && onTimelineClick ? "Double-clic pour créer un jalon à cette date" : undefined}
+              onPointerMove={(e) => {
+                if (!drag) return;
+                const deltaPx = e.clientX - drag.startX;
+                const deltaDays = Math.round(deltaPx / pxPerDay);
+                if (deltaDays !== drag.deltaDays) setDrag({ ...drag, deltaDays });
+              }}
+              onPointerUp={() => {
+                if (!drag || !onMilestoneMove) {
+                  setDrag(null);
+                  return;
+                }
+                const m = milestones.find((mm) => mm.id === drag.id);
+                if (m && drag.deltaDays !== 0) {
+                  const newDate = addDays(m.date, drag.deltaDays);
+                  onMilestoneMove(m.id, newDate.toISOString().slice(0, 10));
+                }
+                setDrag(null);
+              }}
+              onPointerLeave={() => {
+                if (drag) setDrag(null);
+              }}
+            >
               {milestones.map((m) => {
-                const offset = dayOffset(m.date, timelineStart) * pxPerDay;
+                const isDragging = drag?.id === m.id;
+                const previewDate = isDragging ? addDays(m.date, drag.deltaDays) : m.date;
+                const offset = dayOffset(previewDate, timelineStart) * pxPerDay;
                 const isPast = startOfDay(m.date) < today;
                 const state = m.completed ? "done" : isPast ? "overdue" : "future";
+                const isSelected = selectedMilestoneId === m.id;
                 return (
                   <div
                     key={m.id}
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group"
-                    style={{ left: offset }}
+                    tabIndex={onMilestoneClick ? 0 : -1}
+                    className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group outline-none ${
+                      isDragging ? "z-50" : "z-10"
+                    }`}
+                    style={{ left: offset, opacity: isDragging ? 0.7 : 1, cursor: onMilestoneMove ? "grab" : onMilestoneClick ? "pointer" : undefined }}
                     title={`${m.name} — ${m.date.toLocaleDateString("fr-FR")}${m.description ? " — " + m.description : ""}`}
+                    onPointerDown={(e) => {
+                      if (readOnly || !onMilestoneMove) return;
+                      e.stopPropagation();
+                      setDrag({ id: m.id, startX: e.clientX, deltaDays: 0 });
+                    }}
+                    onClick={(e) => {
+                      if (drag) return;
+                      e.stopPropagation();
+                      onMilestoneClick?.(m.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (readOnly || !onMilestoneMove) return;
+                      if (e.key === "ArrowLeft") {
+                        e.preventDefault();
+                        onMilestoneMove(m.id, addDays(m.date, -1).toISOString().slice(0, 10));
+                      } else if (e.key === "ArrowRight") {
+                        e.preventDefault();
+                        onMilestoneMove(m.id, addDays(m.date, 1).toISOString().slice(0, 10));
+                      } else if (e.key === "Enter") {
+                        e.preventDefault();
+                        onMilestoneClick?.(m.id);
+                      }
+                    }}
                   >
                     <div
-                      className={`w-3.5 h-3.5 rotate-45 border-2 ${
+                      className={`w-3.5 h-3.5 rotate-45 border-2 ${isSelected ? "ring-2 ring-offset-1 ring-[#2f6f8f]" : ""} ${
                         state === "done"
                           ? "bg-green-500 border-green-600"
                           : state === "overdue"
@@ -210,7 +294,7 @@ export function GanttChart({ lots, phases, milestones, projectStart, projectEnd,
                       style={state === "future" ? { borderColor: m.color } : undefined}
                     />
                     <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-5 hidden group-hover:block bg-slate-800 text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-40">
-                      {m.name} · {m.date.toLocaleDateString("fr-FR")}
+                      {m.name} · {previewDate.toLocaleDateString("fr-FR")}
                     </div>
                   </div>
                 );
@@ -257,7 +341,7 @@ export function GanttChart({ lots, phases, milestones, projectStart, projectEnd,
                     return (
                       <div key={p.id} className="flex border-b border-slate-50">
                         <div style={{ width: LABEL_WIDTH }} className="shrink-0 sticky left-0 bg-white z-10 border-r border-slate-200 px-2 py-1.5 text-[11px] text-slate-500 truncate pl-4">
-                          {PHASE_LABELS[p.phase as PhaseName]}
+                          {p.customLabel ?? PHASE_LABELS[p.phase as PhaseName]}
                         </div>
                         <div className="relative" style={{ width: totalWidth, height: 30 }}>
                           <div
@@ -268,7 +352,7 @@ export function GanttChart({ lots, phases, milestones, projectStart, projectEnd,
                               backgroundColor: color,
                               opacity: isPast ? 1 : isCurrent ? 1 : 0.35,
                             }}
-                            title={`${PHASE_LABELS[p.phase as PhaseName]} · ${fmtShort(p.startDate)} → ${fmtShort(p.endDate)} · ${Math.round(p.progress ?? 0)}% avancé`}
+                            title={`${p.customLabel ?? PHASE_LABELS[p.phase as PhaseName]} · ${fmtShort(p.startDate)} → ${fmtShort(p.endDate)} · ${Math.round(p.progress ?? 0)}% avancé`}
                           >
                             {isCurrent && elapsedWidth < width && (
                               <div

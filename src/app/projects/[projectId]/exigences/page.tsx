@@ -15,6 +15,9 @@ import {
 } from "@/lib/constants";
 import { totalDevCharge, totalIotCharge } from "@/lib/engine/charge";
 import { formatJH } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
 
 export default async function ExigencesPage({
   params,
@@ -47,25 +50,36 @@ export default async function ExigencesPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">1 · Référentiel des exigences</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Cataloguez les exigences ; la charge se déduit de la complexité (modifiable).
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Référentiel Exigences"
+        highlight="Exigences"
+        subtitle="Cataloguez les exigences ; la charge se déduit de la complexité (modifiable)."
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Stat label="Exigences (total)" value={requirements.length.toString()} />
-        <Stat label="Retenues" value={retenues.toString()} />
-        <Stat label="Charge Dev+TU retenue" value={formatJH(chargeDevTU)} />
-        <Stat label="Charge IoT retenue" value={formatJH(chargeIoT)} />
+        <Card tone="mint" className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink/60">Exigences (total)</p>
+          <p className="mt-1 font-display text-2xl text-ink">{requirements.length}</p>
+        </Card>
+        <Card tone="lavender" className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink/60">Retenues</p>
+          <p className="mt-1 font-display text-2xl text-ink">{retenues}</p>
+        </Card>
+        <Card tone="sky" className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink/60">Charge Dev+TU retenue</p>
+          <p className="mt-1 font-display text-2xl text-ink">{formatJH(chargeDevTU)}</p>
+        </Card>
+        <Card tone="rose" className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink/60">Charge IoT retenue</p>
+          <p className="mt-1 font-display text-2xl text-ink">{formatJH(chargeIoT)}</p>
+        </Card>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
+      <div className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm min-w-[1400px]">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">ID</th>
               <th className="p-2">Epic</th>
               <th className="p-2">Module</th>
@@ -166,22 +180,8 @@ export default async function ExigencesPage({
       </div>
 
       <form action={addAction}>
-        <button
-          type="submit"
-          className="btn-gold rounded-full text-sm font-semibold px-4 py-2 transition-all"
-        >
-          + Ajouter une exigence
-        </button>
+        <Button type="submit">+ Ajouter une exigence</Button>
       </form>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="cell-total rounded-lg p-3">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-800">{value}</p>
     </div>
   );
 }

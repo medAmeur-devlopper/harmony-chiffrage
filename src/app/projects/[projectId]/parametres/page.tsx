@@ -11,6 +11,7 @@ import {
   ENTITIES,
 } from "@/lib/constants";
 import { formatPct } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ParametresPage({
   params,
@@ -59,18 +60,19 @@ export default async function ParametresPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">Paramètres &amp; abaques</h2>
-        <p className="text-slate-500 text-sm mt-1">Barèmes de charge, profils &amp; CJM, niveaux IA, provisions.</p>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Paramètres & abaques"
+        highlight="abaques"
+        subtitle="Barèmes de charge, profils & CJM, niveaux IA, provisions."
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-white rounded-lg border border-slate-200 p-5">
-          <h3 className="font-semibold text-slate-700 mb-4">A. Complexité → Charge Dev+TU (JH)</h3>
+        <section className="rounded-2xl bg-surface p-5">
+          <h3 className="font-semibold text-primary mb-4">A. Complexité → Charge Dev+TU (JH)</h3>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-400">
+              <tr className="text-left text-xs text-muted">
                 <th className="pb-2">Complexité</th>
                 <th className="pb-2">Charge (JH)</th>
               </tr>
@@ -93,8 +95,8 @@ export default async function ParametresPage({
           </table>
         </section>
 
-        <section className="bg-white rounded-lg border border-slate-200 p-5">
-          <h3 className="font-semibold text-slate-700 mb-4">B. Niveau IA du projet</h3>
+        <section className="rounded-2xl bg-surface p-5">
+          <h3 className="font-semibold text-primary mb-4">B. Niveau IA du projet</h3>
           <EditableSelect
             defaultValue={version.iaLevel}
             action={iaLevel}
@@ -103,7 +105,7 @@ export default async function ParametresPage({
           />
           <table className="w-full text-sm mt-4">
             <thead>
-              <tr className="text-left text-xs text-slate-400">
+              <tr className="text-left text-xs text-muted">
                 <th className="pb-2">Niveau IA</th>
                 <th className="pb-2">Ratio</th>
               </tr>
@@ -120,11 +122,11 @@ export default async function ParametresPage({
         </section>
       </div>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">C. Profils · CJM · Markup</h3>
+      <section className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">C. Profils · CJM · Markup</h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-slate-400">
+            <tr className="text-left text-xs text-muted">
               <th className="pb-2">Profil</th>
               <th className="pb-2">Code</th>
               <th className="pb-2">CJM (DH/JH)</th>
@@ -136,7 +138,7 @@ export default async function ParametresPage({
             {profiles.map((p) => (
               <tr key={p.id} className="border-t border-slate-100">
                 <td className="py-1.5">{p.name}</td>
-                <td className="py-1.5 text-slate-400">{p.code}</td>
+                <td className="py-1.5 text-muted">{p.code}</td>
                 <td className="py-1.5 w-28">
                   <EditableField
                     type="number"
@@ -165,12 +167,12 @@ export default async function ParametresPage({
         </table>
       </section>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">D. Provisions &amp; conditions commerciales</h3>
+      <section className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">D. Provisions &amp; conditions commerciales</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
           {provisionRows.map((row) => (
             <div key={row.field} className="flex items-center justify-between gap-4">
-              <label className="text-sm text-slate-600">{row.label}</label>
+              <label className="text-sm text-muted">{row.label}</label>
               <div className="w-28 flex items-center gap-2">
                 <EditableField
                   type="number"
@@ -178,7 +180,7 @@ export default async function ParametresPage({
                   defaultValue={row.value.toString()}
                   action={provision.bind(null, row.field)}
                 />
-                <span className="text-xs text-slate-400 w-10">{formatPct(row.value)}</span>
+                <span className="text-xs text-muted w-10">{formatPct(row.value)}</span>
               </div>
             </div>
           ))}

@@ -17,6 +17,8 @@ import {
   RISK_SCORE,
   RISK_SCORE_COLORS,
 } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function RisquesPage({
   params,
@@ -53,30 +55,29 @@ export default async function RisquesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-          <h2 className="text-xl font-bold text-slate-800 mt-1">Gestion des risques</h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Identifier, suivre et mitiger les risques projet — matrice probabilité × impact.
-          </p>
-        </div>
-        <form action={addAction}>
-          <button type="submit" className="btn-gold whitespace-nowrap rounded-lg text-sm font-semibold px-4 py-2">
-            + Ajouter un risque
-          </button>
-        </form>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Registre des risques"
+        highlight="risques"
+        subtitle="Identifier, suivre et mitiger les risques projet — matrice probabilité × impact."
+        actions={
+          <form action={addAction}>
+            <Button type="submit" className="whitespace-nowrap">
+              + Ajouter un risque
+            </Button>
+          </form>
+        }
+      />
 
-      <section className="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">Matrice des risques actifs</h3>
+      <section className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">Matrice des risques actifs</h3>
         <div className="overflow-x-auto">
           <table className="text-sm border-separate border-spacing-1">
             <thead>
               <tr>
-                <th className="p-2 text-xs text-slate-400"></th>
+                <th className="p-2 text-xs text-muted"></th>
                 {RISK_IMPACTS.map((impact) => (
-                  <th key={impact} className="p-2 text-xs font-semibold text-slate-500">
+                  <th key={impact} className="p-2 text-xs font-semibold text-muted">
                     {RISK_IMPACT_LABELS[impact]}
                   </th>
                 ))}
@@ -87,7 +88,7 @@ export default async function RisquesPage({
                 .reverse()
                 .map((probability) => (
                   <tr key={probability}>
-                    <td className="p-2 text-xs font-semibold text-slate-500 whitespace-nowrap">
+                    <td className="p-2 text-xs font-semibold text-muted whitespace-nowrap">
                       {RISK_PROBABILITY_LABELS[probability]}
                     </td>
                     {RISK_IMPACTS.map((impact) => {
@@ -109,10 +110,10 @@ export default async function RisquesPage({
         </div>
       </section>
 
-      <section className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
+      <section className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">Risque</th>
               <th className="p-2">Probabilité</th>
               <th className="p-2">Impact</th>
@@ -125,7 +126,7 @@ export default async function RisquesPage({
           <tbody>
             {risks.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-6 text-center text-slate-400 text-sm">
+                <td colSpan={7} className="p-6 text-center text-muted text-sm">
                   Aucun risque identifié pour ce projet.
                 </td>
               </tr>

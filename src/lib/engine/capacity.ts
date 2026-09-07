@@ -78,3 +78,12 @@ export function totalStaffedPerWeek(
     return { weekIndex, total, overloaded: total > col.availableDays };
   });
 }
+
+/** Running sum of daysStaffed up to (and including) each cell, in cell/weekIndex order. */
+export function cumulativeStaffing(row: ProfileStaffingRow): number[] {
+  let running = 0;
+  return row.cells.map((c) => {
+    running += c.daysStaffed;
+    return running;
+  });
+}

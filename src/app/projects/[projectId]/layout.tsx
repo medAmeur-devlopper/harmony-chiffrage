@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, ProjectStatus, USER_ROLE_LABELS, UserRole } from "@/lib/constants";
 import { StepNavigation } from "@/components/step-navigation";
-import { NavTabs } from "@/components/nav-tabs";
+import { NavSidebar } from "@/components/nav-sidebar";
+import { CommandPalette } from "@/components/command-palette";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { ReadOnlyGuard } from "@/components/read-only-guard";
 import { NotificationBell } from "@/components/notification-bell";
 import { requireAuth, logout } from "@/lib/auth";
@@ -33,21 +35,23 @@ export default async function ProjectLayout({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="brand-gradient shadow-lg shadow-slate-900/10">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <div>
-            <Link href="/" className="text-xs font-semibold tracking-wide text-[#FFC933] hover:underline">
-              ← Mes projets
+      <header className="bg-surface border-b border-subtle">
+        <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="font-display italic text-xl text-brand hover:text-accent transition-colors">
+              Harmony
             </Link>
-            <h1 className="text-xl font-bold text-white mt-1">
-              {project.name} <span className="text-slate-300 font-normal">— {project.client}</span>
-            </h1>
+            <span className="hidden md:block h-6 w-px bg-subtle" />
+            <span className="hidden md:block">
+              <span className="block font-display text-lg leading-tight text-primary">{project.name}</span>
+              <span className="block text-xs text-muted leading-tight">{project.client}</span>
+            </span>
           </div>
           <span className="flex items-center gap-3">
             {user.role === "ADMIN" && (
               <Link
                 href="/admin"
-                className="rounded-full border border-white/30 text-white/90 text-xs font-medium px-3 py-1.5 hover:bg-white/10 transition-colors"
+                className="rounded-full border border-subtle text-primary text-xs font-medium px-3 py-1.5 hover:bg-app transition-colors"
               >
                 🔐 Admin
               </Link>
@@ -56,7 +60,7 @@ export default async function ProjectLayout({
               href={`/api/projects/${projectId}/export`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-[#FFC933] text-[#FFC933] text-xs font-medium px-3 py-1.5 hover:bg-[#FFC933] hover:text-[#0B1B30] transition-colors"
+              className="rounded-full border border-accent text-accent text-xs font-medium px-3 py-1.5 hover:bg-accent hover:text-white transition-colors"
             >
               ⬇ Exporter Excel
             </a>
@@ -76,15 +80,15 @@ export default async function ProjectLayout({
               markOneAction={markNotificationRead}
               markAllAction={markAllNotificationsRead}
             />
-            <span className="flex items-center gap-2 border-l border-white/20 pl-3">
+            <span className="flex items-center gap-2 border-l border-subtle pl-3">
               <span className="text-right leading-tight">
-                <span className="block text-xs font-medium text-white">{user.name}</span>
-                <span className="block text-[10px] text-white/60">{USER_ROLE_LABELS[user.role as UserRole]}</span>
+                <span className="block text-xs font-medium text-primary">{user.name}</span>
+                <span className="block text-[10px] text-muted">{USER_ROLE_LABELS[user.role as UserRole]}</span>
               </span>
               <form action={logout}>
                 <button
                   type="submit"
-                  className="text-xs text-white/70 hover:text-white transition-colors"
+                  className="text-xs text-muted hover:text-primary transition-colors"
                   title="Déconnexion"
                 >
                   ⏻
@@ -93,12 +97,16 @@ export default async function ProjectLayout({
             </span>
           </span>
         </div>
-        <NavTabs projectId={projectId} userRole={user.role} />
       </header>
-      <main className="flex-1 mx-auto max-w-7xl w-full px-6 py-8">
-        <ReadOnlyGuard role={user.role}>{children}</ReadOnlyGuard>
-        <StepNavigation projectId={projectId} />
-      </main>
+      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-6 py-8">
+        <NavSidebar projectId={projectId} userRole={user.role} />
+        <main className="min-w-0 flex-1">
+          <Breadcrumb projectId={projectId} projectName={project.name} />
+          <ReadOnlyGuard role={user.role}>{children}</ReadOnlyGuard>
+          <StepNavigation projectId={projectId} />
+        </main>
+      </div>
+      <CommandPalette projectId={projectId} userRole={user.role} />
     </div>
   );
 }

@@ -11,6 +11,7 @@ export async function updateChargeDirecte(versionId: string, projectId: string, 
   if (num !== null && Number.isNaN(num)) return;
   await prisma.projectVersion.update({ where: { id: versionId }, data: { chargeDirecte: num } });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 export async function updateActivity(
@@ -33,6 +34,10 @@ export async function updateActivity(
     await prisma.activity.update({ where: { id }, data: { [field]: num } });
   }
   revalidatePath(`/projects/${projectId}`);
+  // abaquePct/gainRefPct/profileId all feed into chargeRetenue, which drives "Charge à staffer" on /capacity.
+  if (field === "abaquePct" || field === "gainRefPct" || field === "profileId") {
+    revalidatePath(`/projects/${projectId}/capacity`);
+  }
 }
 
 export async function addActivity(projectId: string, versionId: string) {
@@ -50,12 +55,14 @@ export async function addActivity(projectId: string, versionId: string) {
     },
   });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 export async function deleteActivity(id: string, projectId: string) {
   await requireRole(["ADMIN", "EDITEUR"]);
   await prisma.activity.delete({ where: { id } });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 
@@ -78,6 +85,7 @@ export async function addResourceLine(projectId: string, versionId: string) {
     },
   });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`); // feeds the "Autres ressources chiffrées" footer on /capacity
 }
 
 export async function updateResourceLine(
@@ -98,10 +106,12 @@ export async function updateResourceLine(
     await prisma.resourceLine.update({ where: { id }, data: { [field]: value } });
   }
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }
 
 export async function deleteResourceLine(id: string, projectId: string) {
   await requireRole(["ADMIN", "EDITEUR"]);
   await prisma.resourceLine.delete({ where: { id } });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
 }

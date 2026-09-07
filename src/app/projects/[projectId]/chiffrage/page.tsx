@@ -24,6 +24,10 @@ import {
 import { summarizeByPhase, totalProjectCharge } from "@/lib/engine/abaque";
 import { summarizeByCategory } from "@/lib/engine/pricing";
 import { formatDH, formatJH, formatPct } from "@/lib/utils";
+import { Stat } from "@/components/ui/stat";
+import { Button } from "@/components/ui/button";
+import { FadeInSection } from "@/components/motion/fade-in-section";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ChiffragePage({
   params,
@@ -100,19 +104,18 @@ export default async function ChiffragePage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-        <h2 className="text-xl font-bold text-slate-800 mt-1">2 · Chiffrage projet</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Charge Dev+TU du référentiel → abaque activités → coûts, prix et marge.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Chiffrage projet"
+        highlight="projet"
+        subtitle="Charge Dev+TU du référentiel → abaque activités → coûts, prix et marge."
+      />
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
+      <FadeInSection className="rounded-2xl bg-surface p-5">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Stat label="Charge Dev+TU référentiel (JH)" value={formatJH(chargeReferentiel)} />
           <div className="cell-total rounded-lg p-3">
-            <p className="text-xs text-slate-500">Saisie directe (JH, optionnel)</p>
+            <p className="text-xs text-muted">Saisie directe (JH, optionnel)</p>
             <EditableField
               type="number"
               step="0.5"
@@ -128,13 +131,13 @@ export default async function ChiffragePage({
           <Stat label="Charge globale — hors IA (JH)" value={formatJH(globalHorsIA)} />
           <Stat label="Charge globale — avec IA (JH)" value={formatJH(globalAvecIA)} />
         </div>
-      </section>
+      </FadeInSection>
 
-      <section className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
-        <h3 className="font-semibold text-slate-700 p-4 pb-0">A. Activités (abaque automatique)</h3>
+      <FadeInSection className="rounded-2xl bg-surface overflow-x-auto">
+        <h3 className="font-semibold text-primary p-4 pb-0">A. Activités (abaque automatique)</h3>
         <table className="w-full text-sm mt-3">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">#</th>
               <th className="p-2">Phase</th>
               <th className="p-2 min-w-55">Activité</th>
@@ -150,7 +153,7 @@ export default async function ChiffragePage({
           <tbody>
             {abaqueResults.map((a, i) => (
               <tr key={a.id} className="border-b border-slate-100">
-                <td className="p-1.5 text-slate-400">{i + 1}</td>
+                <td className="p-1.5 text-muted">{i + 1}</td>
                 <td className="p-1.5 w-32">
                   <EditableSelect
                     defaultValue={a.phase}
@@ -212,20 +215,15 @@ export default async function ChiffragePage({
           </tbody>
         </table>
         <form action={addActivityAction} className="p-4">
-          <button
-            type="submit"
-            className="btn-gold rounded-full text-sm font-semibold px-4 py-2 transition-all"
-          >
-            + Ajouter une activité
-          </button>
+          <Button type="submit">+ Ajouter une activité</Button>
         </form>
-      </section>
+      </FadeInSection>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">B. Restitution par phase</h3>
+      <FadeInSection className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">B. Restitution par phase</h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">Phase</th>
               <th className="p-2">Charge sans IA</th>
               <th className="p-2">Charge avec IA</th>
@@ -245,11 +243,11 @@ export default async function ChiffragePage({
             ))}
           </tbody>
         </table>
-      </section>
+      </FadeInSection>
 
-      <section className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
-        <h3 className="font-semibold text-slate-700 p-4 pb-0">C. Ressources &amp; moyens — coûts, prix, marge</h3>
-        <p className="text-xs text-slate-400 px-4 pt-1">
+      <FadeInSection className="rounded-2xl bg-surface overflow-x-auto">
+        <h3 className="font-semibold text-primary p-4 pb-0">C. Ressources &amp; moyens — coûts, prix, marge</h3>
+        <p className="text-xs text-muted px-4 pt-1">
           Les lignes grisées (Moyens Humains) sont calculées automatiquement depuis l&apos;abaque : un
           profil affichant 🔒 est assigné à une activité et doit d&apos;abord en être retiré (section A)
           avant de pouvoir être supprimé. Les autres lignes (toutes catégories) s&apos;ajoutent et se
@@ -257,7 +255,7 @@ export default async function ChiffragePage({
         </p>
         <table className="w-full text-sm mt-3">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">Catégorie</th>
               <th className="p-2">Ressource</th>
               <th className="p-2">Entité</th>
@@ -279,7 +277,7 @@ export default async function ChiffragePage({
               const profile = profiles[idx];
               const isUsed = usedProfileIds.has(profile.id);
               return (
-                <tr key={l.id} className="border-b border-slate-100 text-slate-500">
+                <tr id={`profile-${profile.id}`} key={l.id} className="border-b border-slate-100 text-muted scroll-mt-24">
                   <td className="p-2">{l.category}</td>
                   <td className="p-2">{l.resourceName}</td>
                   <td className="p-2">{l.entity}</td>
@@ -295,7 +293,7 @@ export default async function ChiffragePage({
                   <td className="p-2 cell-computed rounded text-center">{formatPct(l.marginPct)}</td>
                   <td className="p-1.5">
                     {isUsed ? (
-                      <span className="text-xs text-slate-300" title="Assigné à une activité de l'abaque — retirez-le de l'abaque pour pouvoir le supprimer">
+                      <span className="text-xs text-muted" title="Assigné à une activité de l'abaque — retirez-le de l'abaque pour pouvoir le supprimer">
                         🔒
                       </span>
                     ) : (
@@ -400,32 +398,15 @@ export default async function ChiffragePage({
         </table>
         <div className="p-4 flex flex-wrap gap-3">
           <form action={addLineAction}>
-            <button
-              type="submit"
-              className="btn-gold rounded-full text-sm font-semibold px-4 py-2 transition-all"
-            >
-              + Ajouter une ressource
-            </button>
+            <Button type="submit">+ Ajouter une ressource</Button>
           </form>
           <form action={addProfileAction}>
-            <button
-              type="submit"
-              className="rounded-full border-2 border-[#16314F] text-[#16314F] text-sm font-semibold px-4 py-2 hover:bg-[#16314F] hover:text-white transition-colors"
-            >
+            <Button type="submit" variant="secondary">
               + Ajouter un profil (Moyens Humains)
-            </button>
+            </Button>
           </form>
         </div>
-      </section>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="cell-total rounded-lg p-3">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-800">{value}</p>
+      </FadeInSection>
     </div>
   );
 }

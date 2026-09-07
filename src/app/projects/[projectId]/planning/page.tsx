@@ -1,11 +1,15 @@
 import { getCurrentVersion } from "@/lib/getProjectVersion";
 import { prisma } from "@/lib/prisma";
 import { EditableField } from "@/components/editable-field";
-import { updateProjectStartDate, updatePhaseDuration, updateLotDescription, updatePhaseManualStart, updatePhaseProgress } from "./actions";
-import { PHASE_LABELS, PhaseName } from "@/lib/constants";
+import { updateProjectStartDate, updatePhaseDuration, updateLotDescription, updatePhaseManualStart, updatePhaseProgress, addLot, deleteLot, addPhase, deletePhase, renamePhase, reorderPhase } from "./actions";
+import { PHASE_LABELS, PHASES, PhaseName } from "@/lib/constants";
+import { AddLotButton, DeleteLotButton, AddPhaseButton, DeletePhaseButton, ReorderPhaseButtons } from "@/components/lot-actions";
 import { cascadeDates, projectEndDate, totalProjectWeeks, computeOverallProgress, LotPhaseInput } from "@/lib/engine/planning";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { Stat } from "@/components/ui/stat";
+import { FadeInSection } from "@/components/motion/fade-in-section";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function PlanningPage({
   params,
@@ -68,30 +72,52 @@ export default async function PlanningPage({
     "use server";
     await updatePhaseProgress(id, projectId, v);
   };
+  const addLotAction = async (name: string) => {
+    "use server";
+    await addLot(version.id, projectId, name);
+  };
+  const deleteLotAction = async (id: string) => {
+    "use server";
+    await deleteLot(id, projectId);
+  };
+  const addPhaseAction = async (lotId: string, phase: string) => {
+    "use server";
+    await addPhase(lotId, projectId, phase);
+  };
+  const deletePhaseAction = async (id: string) => {
+    "use server";
+    await deletePhase(id, projectId);
+  };
+  const renamePhaseAction = async (id: string, label: string) => {
+    "use server";
+    await renamePhase(id, projectId, label);
+  };
+  const reorderPhaseAction = async (id: string, direction: "up" | "down") => {
+    "use server";
+    await reorderPhase(id, projectId, direction);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold tracking-wide text-[#16314F]">HARMONY · OUTIL DE CHIFFRAGE</p>
-          <h2 className="text-xl font-bold text-slate-800 mt-1">3a · Macro planning — dates par lot &amp; phase</h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Saisir les durées (semaines) : les dates s&apos;enchaînent en cascade (jours fériés déduits). Une date de
-            début manuelle permet de paralleliser un lot.
-          </p>
-        </div>
-        <Link
-          href={`/projects/${projectId}/gantt`}
-          className="whitespace-nowrap rounded-lg bg-linear-to-r from-[#2f6f8f] to-[#16314F] text-white text-sm font-medium px-4 py-2 shadow hover:shadow-md transition-shadow"
-        >
-          → Voir le Gantt interactif
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="HARMONY · OUTIL DE CHIFFRAGE"
+        title="Macro planning"
+        highlight="planning"
+        subtitle="Saisir les durées (semaines) : les dates s'enchâînent en cascade (jours fériés déduits). Une date de début manuelle permet de paralleliser un lot."
+        actions={
+          <Link
+            href={`/projects/${projectId}/gantt`}
+            className="inline-flex whitespace-nowrap items-center justify-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
+          >
+            → Voir le Gantt interactif
+          </Link>
+        }
+      />
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
+      <FadeInSection className="rounded-2xl bg-surface p-5">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="cell-total rounded-lg p-3">
-            <p className="text-xs text-slate-500">Date de démarrage projet</p>
+            <p className="text-xs text-muted">Date de démarrage projet</p>
             <EditableField
               type="text"
               defaultValue={projectStart.toISOString().slice(0, 10)}
@@ -103,19 +129,22 @@ export default async function PlanningPage({
           <Stat label="Durée totale" value={`${totalWeeks} sem.`} />
           <Stat label="Avancement global" value={`${overallProgress.toFixed(0)}%`} />
         </div>
-      </section>
+      </FadeInSection>
 
-      <section className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
+      <FadeInSection className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-slate-400 border-b border-slate-200">
+            <tr className="text-left text-xs text-muted border-b border-slate-200">
               <th className="p-2">Lot</th>
+              <th className="p-2 w-8"></th>
+              <th className="p-2 w-6"></th>
               <th className="p-2">Phase</th>
               <th className="p-2">Durée (sem.)</th>
               <th className="p-2">Avancement</th>
               <th className="p-2">Début manuel</th>
               <th className="p-2">Début</th>
               <th className="p-2">Fin</th>
+              <th className="p-2 w-8"></th>
               <th className="p-2">Lot — description</th>
             </tr>
           </thead>
@@ -126,7 +155,26 @@ export default async function PlanningPage({
                 return (
                   <tr key={phase.id} className="border-b border-slate-100">
                     <td className="p-2 font-medium">{idx === 0 ? lot.name : ""}</td>
-                    <td className="p-2">{PHASE_LABELS[phase.phase as PhaseName]}</td>
+                    <td className="p-1 text-center">
+                      {idx === 0 ? (
+                        <DeleteLotButton lotId={lot.id} lotName={lot.name} action={deleteLotAction} />
+                      ) : null}
+                    </td>
+                    <td className="p-1 text-center">
+                      <ReorderPhaseButtons
+                        phaseId={phase.id}
+                        canMoveUp={idx > 0}
+                        canMoveDown={idx < lot.phases.length - 1}
+                        action={reorderPhaseAction}
+                      />
+                    </td>
+                    <td className="p-2 w-40">
+                      <EditableField
+                        defaultValue={phase.customLabel ?? PHASE_LABELS[phase.phase as PhaseName]}
+                        action={renamePhaseAction.bind(null, phase.id)}
+                        className="text-xs"
+                      />
+                    </td>
                     <td className="p-1.5 w-20">
                       <EditableField
                         type="number"
@@ -160,6 +208,13 @@ export default async function PlanningPage({
                     </td>
                     <td className="p-2 cell-computed rounded text-center">{formatDate(c?.startDate)}</td>
                     <td className="p-2 cell-computed rounded text-center">{formatDate(c?.endDate)}</td>
+                    <td className="p-1 text-center">
+                      <DeletePhaseButton
+                        phaseId={phase.id}
+                        phaseLabel={PHASE_LABELS[phase.phase as PhaseName]}
+                        action={deletePhaseAction}
+                      />
+                    </td>
                     <td className="p-1.5 w-48">
                       {idx === 0 ? (
                         <EditableField
@@ -174,10 +229,27 @@ export default async function PlanningPage({
             )}
           </tbody>
         </table>
-      </section>
+        <div className="p-3 border-t border-slate-200 space-y-3">
+          {lots.map((lot) => {
+            const usedPhases = new Set(lot.phases.map((p) => p.phase));
+            const availablePhases = PHASES.filter((p) => !usedPhases.has(p)).map((p) => ({
+              value: p,
+              label: PHASE_LABELS[p],
+            }));
+            if (availablePhases.length === 0) return null;
+            return (
+              <div key={lot.id} className="flex items-center gap-2">
+                <span className="text-xs text-muted w-24 shrink-0">{lot.name}</span>
+                <AddPhaseButton lotId={lot.id} availablePhases={availablePhases} action={addPhaseAction} />
+              </div>
+            );
+          })}
+          <AddLotButton action={addLotAction} />
+        </div>
+      </FadeInSection>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">Vue Gantt</h3>
+      <FadeInSection className="rounded-2xl bg-surface p-5">
+        <h3 className="font-semibold text-primary mb-4">Vue Gantt</h3>
         <div className="space-y-2">
           {lots.map((lot) => {
             const lotPhases = cascaded.filter((c) => c.lotId === lot.id);
@@ -188,8 +260,8 @@ export default async function PlanningPage({
             const offsetPct = ((lotStart.getTime() - projectStart.getTime()) / totalMs) * 100;
             const widthPct = ((lotEnd.getTime() - lotStart.getTime()) / totalMs) * 100;
             return (
-              <div key={lot.id} className="flex items-center gap-3">
-                <span className="w-16 text-xs text-slate-500 shrink-0">{lot.name}</span>
+              <div key={lot.id} className="hover-card-magnetic flex items-center gap-3 rounded-lg p-2">
+                <span className="w-16 text-xs text-muted shrink-0">{lot.name}</span>
                 <div className="relative h-6 flex-1 bg-slate-100 rounded">
                   <div
                     className="absolute h-6 rounded bg-[#16314F]"
@@ -201,16 +273,7 @@ export default async function PlanningPage({
             );
           })}
         </div>
-      </section>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="cell-total rounded-lg p-3">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-800">{value}</p>
+      </FadeInSection>
     </div>
   );
 }
