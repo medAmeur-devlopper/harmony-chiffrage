@@ -6,6 +6,7 @@ import { PROJECT_STATUS_COLORS, ProjectStatus, USER_ROLE_LABELS, UserRole } from
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/status-badge";
+import { ImportProjectButton } from "@/components/import-project-button";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function DashboardPage() {
             <p className="text-slate-300 mt-2">Du référentiel d&apos;exigences au prix de vente.</p>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
+            {canEdit && <ImportProjectButton />}
             {user.role === "ADMIN" && (
               <Link
                 href="/admin"
