@@ -21,6 +21,7 @@ import { cascadeDates, projectEndDate, totalProjectWeeks, LotPhaseInput } from "
 import { formatDate, formatJH, formatDH, formatPct, cn } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { FadeInSection } from "@/components/motion/fade-in-section";
+import { RecentDocumentsGrid } from "@/components/recent-documents-grid";
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -244,21 +245,16 @@ export default async function AccueilPage({
         {documents.length === 0 ? (
           <p className="mt-6 text-sm text-muted">Aucun document déposé pour le moment.</p>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {documents.map((doc) => (
-              <a
-                key={doc.id}
-                href={`/api/projects/${projectId}/documents/${doc.id}/download`}
-                className="hover-card-magnetic flex items-center gap-3 rounded-xl border border-subtle p-3"
-              >
-                <span className="text-2xl">{documentIcon(doc.mimeType)}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm text-primary">{doc.fileName}</span>
-                  <span className="block text-[11px] text-muted">{formatDate(doc.createdAt)}</span>
-                </span>
-              </a>
-            ))}
-          </div>
+          <RecentDocumentsGrid
+            projectId={projectId}
+            documents={documents.map((doc) => ({
+              id: doc.id,
+              fileName: doc.fileName,
+              mimeType: doc.mimeType,
+              createdAtLabel: formatDate(doc.createdAt),
+              icon: documentIcon(doc.mimeType),
+            }))}
+          />
         )}
       </FadeInSection>
 

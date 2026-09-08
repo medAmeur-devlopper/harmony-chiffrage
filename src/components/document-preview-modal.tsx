@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { DocumentItem } from "./documents-panel";
+
+export interface PreviewableDocument {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  isImage: boolean;
+}
 
 interface DocumentPreviewModalProps {
-  doc: DocumentItem | null;
+  doc: PreviewableDocument | null;
   projectId: string;
   onClose: () => void;
 }
