@@ -426,7 +426,8 @@ export default async function ChiffragePage({
             key={profiles.length}
             defaultValue=""
             action={addProfileAction}
-            className="w-auto! bg-[#2f6f8f]! text-white! font-medium pl-4 pr-9 py-2 border-none! rounded-md"
+            customArrow
+            className="w-auto! bg-[#2f6f8f]! text-white! font-medium pl-4 pr-11 py-2 border-none! rounded-md"
             options={[
               { value: "", label: "+ Ajouter un profil (Moyens Humains)" },
               ...availableCatalog.map((r) => ({ value: r.id, label: `${r.name} — ${r.cjm} MAD/j` })),

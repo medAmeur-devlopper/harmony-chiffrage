@@ -39,15 +39,32 @@ interface EditableSelectProps {
   action: (value: string) => Promise<void>;
   options: { value: string; label: string }[];
   className?: string;
+  /** Replaces the native OS arrow with a custom one so its inset from the edge can be controlled precisely. */
+  customArrow?: boolean;
 }
 
-export function EditableSelect({ defaultValue, action, options, className }: EditableSelectProps) {
+export function EditableSelect({ defaultValue, action, options, className, customArrow }: EditableSelectProps) {
   const [isPending, startTransition] = useTransition();
   return (
     <select
       defaultValue={defaultValue}
       onChange={(e) => startTransition(() => action(e.target.value))}
-      className={cn("cell-input rounded px-2 py-1 text-sm w-full", isPending && "opacity-60", className)}
+      className={cn(
+        "cell-input rounded px-2 py-1 text-sm w-full",
+        isPending && "opacity-60",
+        customArrow && "appearance-none bg-no-repeat",
+        className
+      )}
+      style={
+        customArrow
+          ? {
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E\")",
+              backgroundPosition: "right 0.9rem center",
+              backgroundSize: "14px",
+            }
+          : undefined
+      }
     >
       {options.map((o) => (
         <option key={o.value} value={o.value} className="text-slate-900 bg-white">
