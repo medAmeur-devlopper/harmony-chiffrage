@@ -5,6 +5,7 @@ import { ProjectStatus, USER_ROLE_LABELS, UserRole } from "@/lib/constants";
 import { StatusBadge } from "@/components/status-badge";
 import { StepNavigation } from "@/components/step-navigation";
 import { NavSidebar } from "@/components/nav-sidebar";
+import { MobileNavDrawer } from "@/components/mobile-nav-drawer";
 import { CommandPalette } from "@/components/command-palette";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { ReadOnlyGuard } from "@/components/read-only-guard";
@@ -36,8 +37,9 @@ export default async function ProjectLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-surface border-b border-subtle">
-        <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mx-auto max-w-7xl px-3 md:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-4">
+            <MobileNavDrawer projectId={projectId} userRole={user.role} />
             <Link href="/" className="font-display italic text-xl text-brand hover:text-accent transition-colors">
               Harmony
             </Link>
@@ -47,22 +49,22 @@ export default async function ProjectLayout({
               <span className="block text-xs text-muted leading-tight">{project.client}</span>
             </span>
           </div>
-          <span className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 sm:gap-3">
             {user.role === "ADMIN" && (
               <Link
                 href="/admin"
-                className="rounded-full border border-subtle text-primary text-xs font-medium px-3 py-1.5 hover:bg-app transition-colors"
+                className="rounded-full border border-subtle text-primary text-xs font-medium px-2.5 md:px-3 py-1.5 hover:bg-app transition-colors"
               >
-                🔐 Admin
+                🔐 <span className="hidden sm:inline">Admin</span>
               </Link>
             )}
             <a
               href={`/api/projects/${projectId}/export`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-accent text-accent text-xs font-medium px-3 py-1.5 hover:bg-accent hover:text-white transition-colors"
+              className="rounded-full border border-accent text-accent text-xs font-medium px-2.5 md:px-3 py-1.5 hover:bg-accent hover:text-white transition-colors"
             >
-              ⬇ Exporter Excel
+              ⬇ <span className="hidden sm:inline">Exporter Excel</span>
             </a>
             <StatusBadge status={project.status as ProjectStatus} />
             <NotificationBell
@@ -78,8 +80,8 @@ export default async function ProjectLayout({
               markOneAction={markNotificationRead}
               markAllAction={markAllNotificationsRead}
             />
-            <span className="flex items-center gap-2 border-l border-subtle pl-3">
-              <span className="text-right leading-tight">
+            <span className="flex items-center gap-2 border-l border-subtle pl-2 sm:pl-3">
+              <span className="hidden sm:block text-right leading-tight">
                 <span className="block text-xs font-medium text-primary">{user.name}</span>
                 <span className="block text-[10px] text-muted">{USER_ROLE_LABELS[user.role as UserRole]}</span>
               </span>
@@ -96,7 +98,7 @@ export default async function ProjectLayout({
           </span>
         </div>
       </header>
-      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-6 py-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-4 md:gap-8 px-3 md:px-6 py-4 md:py-8">
         <NavSidebar projectId={projectId} userRole={user.role} />
         <main className="min-w-0 flex-1">
           <Breadcrumb projectId={projectId} projectName={project.name} />

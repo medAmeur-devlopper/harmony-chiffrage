@@ -18,21 +18,21 @@ export default async function DashboardPage() {
   const canEdit = user.role !== "LECTEUR";
 
   return (
-    <div className="mx-auto max-w-6xl w-full px-6 py-10">
-      <header className="brand-gradient rounded-2xl px-8 py-10 mb-8 text-white shadow-lg shadow-slate-900/10">
+    <div className="mx-auto max-w-6xl w-full px-3 md:px-6 py-6 md:py-10">
+      <header className="brand-gradient rounded-2xl px-5 md:px-8 py-6 md:py-10 mb-8 text-white shadow-lg shadow-slate-900/10">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="text-sm font-semibold tracking-wide text-[#FFC933]">HARMONY · OUTIL DE CHIFFRAGE</p>
-            <h1 className="text-3xl font-bold mt-2">📊 Mes projets</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mt-2">📊 Mes projets</h1>
             <p className="text-slate-300 mt-2">Du référentiel d&apos;exigences au prix de vente.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {user.role === "ADMIN" && (
               <Link
                 href="/admin"
-                className="rounded-full border border-white/30 text-white/90 text-xs font-medium px-3 py-1.5 hover:bg-white/10 transition-colors"
+                className="rounded-full border border-white/30 text-white/90 text-xs font-medium px-2.5 md:px-3 py-1.5 hover:bg-white/10 transition-colors"
               >
-                🔐 Admin
+                🔐 <span className="hidden sm:inline">Admin</span>
               </Link>
             )}
             <span className="flex items-center gap-2 border-l border-white/20 pl-3">
