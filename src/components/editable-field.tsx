@@ -50,7 +50,7 @@ export function EditableSelect({ defaultValue, action, options, className }: Edi
       className={cn("cell-input rounded px-2 py-1 text-sm w-full", isPending && "opacity-60", className)}
     >
       {options.map((o) => (
-        <option key={o.value} value={o.value}>
+        <option key={o.value} value={o.value} className="text-slate-900 bg-white">
           {o.label}
         </option>
       ))}
