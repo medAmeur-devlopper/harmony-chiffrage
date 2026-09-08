@@ -44,8 +44,16 @@ export async function createProject(formData: FormData) {
   });
 
   const profiles = [];
-  for (let i = 0; i < DEFAULT_PROFILES.length; i++) {
-    const p = DEFAULT_PROFILES[i];
+  const catalog = await prisma.resourceCatalog.findMany({
+    where: { organizationId: org.id, isActive: true },
+    orderBy: { orderNum: "asc" },
+  });
+  const sourceProfiles =
+    catalog.length > 0
+      ? catalog.map((r) => ({ name: r.name, code: r.code, cjm: r.cjm, markupPct: r.markupPct, entity: r.entity }))
+      : DEFAULT_PROFILES;
+  for (let i = 0; i < sourceProfiles.length; i++) {
+    const p = sourceProfiles[i];
     profiles.push(await prisma.profile.create({ data: { ...p, projectVersionId: version.id, orderNum: i } }));
   }
   const profileByCode = new Map(profiles.map((p) => [p.code, p]));

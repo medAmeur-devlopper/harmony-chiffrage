@@ -29,6 +29,26 @@ model Organization {
   projects  Project[]
   holidays  Holiday[]
   auditLogs AuditLog[]
+  resources ResourceCatalog[]
+}
+
+// Organization-wide catalog of resources (métiers) and their daily rate (TJM); used to seed
+// Profile rows on project creation. Editing a catalog entry does not retroactively change past projects.
+model ResourceCatalog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  code           String
+  cjm            Float
+  markupPct      Float        @default(0.3)
+  entity         String       @default("Harmony")
+  isActive       Boolean      @default(true)
+  orderNum       Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, code])
 }
 
 model User {

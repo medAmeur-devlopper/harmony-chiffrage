@@ -39,6 +39,12 @@ export default async function AdminPage() {
         <Link href="/" className="text-xs font-semibold tracking-wide text-[#FFC933] hover:underline">← Mes projets</Link>
         <p className="text-sm font-semibold tracking-wide text-[#FFC933] mt-2">HARMONY · OUTIL DE CHIFFRAGE</p>
         <h1 className="text-2xl font-bold mt-2">🔐 Administration — Gestion des utilisateurs</h1>
+        <Link
+          href="/admin/ressources"
+          className="inline-block mt-3 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 transition-colors"
+        >
+          💼 Ressources & TJM →
+        </Link>
       </header>
 
       <section className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
