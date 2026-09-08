@@ -75,7 +75,13 @@ export function DocumentsPanel({
 
   function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
-    uploadFile(files[0]);
+    const file = files[0];
+    const duplicate = documents.some((d) => d.fileName.toLowerCase() === file.name.toLowerCase());
+    if (duplicate && !confirm(`Un fichier nommé « ${file.name} » existe déjà pour ce projet. L'envoyer quand même ?`)) {
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    uploadFile(file);
   }
 
   return (
