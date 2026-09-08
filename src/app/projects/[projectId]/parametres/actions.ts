@@ -65,6 +65,30 @@ export async function addProfile(projectId: string, versionId: string) {
   revalidatePath(`/projects/${projectId}/capacity`);
 }
 
+/** Copies a resource from the org-wide catalog into this project's Profile list (a point-in-time snapshot). */
+export async function addProfileFromCatalog(projectId: string, versionId: string, catalogId: string) {
+  const admin = await requireRole(["ADMIN", "EDITEUR"]);
+  const resource = await prisma.resourceCatalog.findFirst({
+    where: { id: catalogId, organizationId: admin.organizationId },
+  });
+  if (!resource) return;
+  const count = await prisma.profile.count({ where: { projectVersionId: versionId } });
+  await prisma.profile.create({
+    data: {
+      projectVersionId: versionId,
+      name: resource.name,
+      code: resource.code,
+      cjm: resource.cjm,
+      markupPct: resource.markupPct,
+      entity: resource.entity,
+      orderNum: count,
+    },
+  });
+  revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/capacity`);
+}
+
+
 /**
  * Deletes a profile from the resource table. Refused if any abaque activity is still
  * assigned to it, since removing the profile would silently drop that charge from the costing.

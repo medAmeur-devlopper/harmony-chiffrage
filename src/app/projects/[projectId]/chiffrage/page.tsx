@@ -1,5 +1,6 @@
 import { getCurrentVersion } from "@/lib/getProjectVersion";
 import { getProjectFinancials } from "@/lib/getProjectFinancials";
+import { prisma } from "@/lib/prisma";
 import { EditableField, EditableSelect } from "@/components/editable-field";
 import {
   updateChargeDirecte,
@@ -10,7 +11,7 @@ import {
   updateResourceLine,
   deleteResourceLine,
 } from "./actions";
-import { addProfile, deleteProfile } from "../parametres/actions";
+import { addProfile, addProfileFromCatalog, deleteProfile } from "../parametres/actions";
 import {
   PHASE_LABELS,
   PHASES,
@@ -35,7 +36,7 @@ export default async function ChiffragePage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  const { version } = await getCurrentVersion(projectId);
+  const { project, version } = await getCurrentVersion(projectId);
   const {
     profiles,
     activities,
@@ -57,6 +58,14 @@ export default async function ChiffragePage({
   const allLines = [...humanLines, ...otherLines];
   const { total } = summarizeByCategory(allLines, RESOURCE_CATEGORIES);
 
+  // Org-wide catalog resources not yet copied into this project's Profile list.
+  const catalogResources = await prisma.resourceCatalog.findMany({
+    where: { organizationId: project.organizationId, isActive: true },
+    orderBy: { orderNum: "asc" },
+  });
+  const projectProfileCodes = new Set(profiles.map((p) => p.code));
+  const availableCatalog = catalogResources.filter((r) => !projectProfileCodes.has(r.code));
+
   const chargeDirecteAction = async (v: string) => {
     "use server";
     await updateChargeDirecte(version.id, projectId, v);
@@ -77,9 +86,14 @@ export default async function ChiffragePage({
     "use server";
     await deleteActivity(id, projectId);
   };
-  const addProfileAction = async () => {
+  const addProfileAction = async (value: string) => {
     "use server";
-    await addProfile(projectId, version.id);
+    if (!value) return;
+    if (value === "custom") {
+      await addProfile(projectId, version.id);
+    } else {
+      await addProfileFromCatalog(projectId, version.id, value);
+    }
   };
   const delProfileAction = async (id: string) => {
     "use server";
@@ -169,9 +183,17 @@ export default async function ChiffragePage({
                 </td>
                 <td className="p-1.5 min-w-44">
                   <EditableSelect
+                    key={profiles.length}
                     defaultValue={a.profileId ?? ""}
                     action={activityAction.bind(null, a.id, "profileId")}
-                    options={[{ value: "", label: "—" }, ...profiles.map((p) => ({ value: p.id, label: p.name }))]}
+                    options={[
+                      { value: "", label: "—" },
+                      ...profiles.map((p) => ({ value: p.id, label: p.name })),
+                      ...availableCatalog.map((r) => ({
+                        value: `catalog:${r.id}`,
+                        label: `➕ ${r.name} (catalogue)`,
+                      })),
+                    ]}
                   />
                 </td>
                 <td className="p-1.5 min-w-24">
@@ -396,15 +418,21 @@ export default async function ChiffragePage({
             </tr>
           </tbody>
         </table>
-        <div className="p-4 flex flex-wrap gap-3">
+        <div className="p-4 flex flex-wrap gap-3 items-center">
           <form action={addLineAction}>
             <Button type="submit">+ Ajouter une ressource</Button>
           </form>
-          <form action={addProfileAction}>
-            <Button type="submit" variant="secondary">
-              + Ajouter un profil (Moyens Humains)
-            </Button>
-          </form>
+          <EditableSelect
+            key={profiles.length}
+            defaultValue=""
+            action={addProfileAction}
+            className="w-auto! rounded-md bg-[#2f6f8f] text-white font-medium px-4 py-2 border-none"
+            options={[
+              { value: "", label: "+ Ajouter un profil (Moyens Humains)" },
+              ...availableCatalog.map((r) => ({ value: r.id, label: `${r.name} — ${r.cjm} MAD/j` })),
+              { value: "custom", label: "➕ Profil sur mesure (vide)" },
+            ]}
+          />
         </div>
       </FadeInSection>
     </div>

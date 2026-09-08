@@ -24,7 +24,34 @@ export async function updateActivity(
   if (field === "activityName") {
     await prisma.activity.update({ where: { id }, data: { activityName: value || null } });
   } else if (field === "profileId") {
-    await prisma.activity.update({ where: { id }, data: { profileId: value || null } });
+    if (value.startsWith("catalog:")) {
+      // User picked a catalog resource not yet on this project — snapshot it into a Profile, then assign it.
+      const catalogId = value.slice("catalog:".length);
+      const [activity, project] = await Promise.all([
+        prisma.activity.findUnique({ where: { id } }),
+        prisma.project.findUnique({ where: { id: projectId } }),
+      ]);
+      if (!activity || !project) return;
+      const resource = await prisma.resourceCatalog.findFirst({
+        where: { id: catalogId, organizationId: project.organizationId },
+      });
+      if (!resource) return;
+      const count = await prisma.profile.count({ where: { projectVersionId: activity.projectVersionId } });
+      const profile = await prisma.profile.create({
+        data: {
+          projectVersionId: activity.projectVersionId,
+          name: resource.name,
+          code: resource.code,
+          cjm: resource.cjm,
+          markupPct: resource.markupPct,
+          entity: resource.entity,
+          orderNum: count,
+        },
+      });
+      await prisma.activity.update({ where: { id }, data: { profileId: profile.id } });
+    } else {
+      await prisma.activity.update({ where: { id }, data: { profileId: value || null } });
+    }
   } else if (field === "phase") {
     if (!(PHASES as readonly string[]).includes(value)) return;
     await prisma.activity.update({ where: { id }, data: { phase: value } });
